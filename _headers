@@ -1,0 +1,30 @@
+# ── Netlify Headers ─────────────────────────────────────────────────────────
+
+# Service Worker — sin caché para que siempre sea la versión más reciente
+/sw.js
+  Cache-Control: no-cache, no-store, must-revalidate
+  Service-Worker-Allowed: /
+
+# Manifest
+/manifest.json
+  Cache-Control: public, max-age=86400
+  Content-Type: application/manifest+json
+
+# Assets estáticos — caché agresivo (1 año)
+/icons/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# HTML principal — sin caché para reflejar actualizaciones
+/index.html
+  Cache-Control: no-cache
+  X-Frame-Options: SAMEORIGIN
+  X-Content-Type-Options: nosniff
+  X-XSS-Protection: 1; mode=block
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: microphone=(self), camera=(), geolocation=()
+
+# Global — cabeceras de seguridad en todas las rutas
+/*
+  X-Frame-Options: SAMEORIGIN
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin

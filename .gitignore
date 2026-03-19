@@ -1,0 +1,19 @@
+# Sistema
+.DS_Store
+Thumbs.db
+*.log
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Netlify
+.netlify/
+
+# Vercel
+.vercel/
+
+# Node (si se agrega build en el futuro)
+node_modules/
+dist/

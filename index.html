@@ -1,0 +1,3065 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<!-- ── PWA ──────────────────────────────────────────────────────────────── -->
+<link rel="manifest" href="/manifest.json"/>
+<meta name="theme-color" content="#FF7B54"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="Palabras"/>
+<meta name="application-name" content="¡Aprende Palabras!"/>
+<meta name="description" content="Flashcards interactivas con Coco el cocodrilo y Bú el búho"/>
+<meta name="keywords" content="educación, niños, español, inglés, flashcards, aprender"/>
+
+<!-- Apple touch icons -->
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"/>
+<link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png"/>
+<link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192x192.png"/>
+
+<!-- Favicon -->
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico"/>
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png"/>
+
+<!-- Open Graph -->
+<meta property="og:title" content="¡Aprende Palabras!"/>
+<meta property="og:description" content="Flashcards con Coco y Bú para aprender español e inglés"/>
+<meta property="og:type" content="website"/>
+<meta property="og:image" content="/icons/icon-512x512.png"/>
+<title>¡Aprende Palabras! 🎒</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&family=Baloo+2:wght@700;800&family=DM+Sans:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body,#app{font-family:'Nunito',sans-serif;background:#FFF8F0;min-height:100vh;}
+
+#home{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:1.2rem 1rem 1.5rem;background:#FFF8F0;z-index:10;transition:opacity 0.3s;overflow-y:auto;}
+
+.home-header{display:flex;flex-direction:column;align-items:center;width:100%;max-width:500px;margin-bottom:1.1rem;background:linear-gradient(135deg,#FF7B54 0%,#FF9B54 100%);border-radius:22px;padding:1rem 1.2rem 0.9rem;box-shadow:0 6px 20px rgba(255,123,84,0.28);position:relative;overflow:hidden;}
+.home-header::before{content:'';position:absolute;top:-20px;right:-20px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,0.12);}
+.home-header::after{content:'';position:absolute;bottom:-30px;left:-10px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,0.08);}
+.home-emoji{font-size:2.8rem;margin-bottom:0.2rem;animation:float 3s ease-in-out infinite;display:block;position:relative;z-index:1;}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.home-title{font-family:'Baloo 2',cursive;font-size:1.7rem;font-weight:800;color:white;text-align:center;line-height:1.1;text-shadow:0 2px 8px rgba(0,0,0,0.12);position:relative;z-index:1;}
+.home-sub{font-size:0.8rem;color:rgba(255,255,255,0.85);text-align:center;margin-top:0.2rem;font-weight:600;position:relative;z-index:1;}
+
+.section-label{font-size:0.72rem;font-weight:800;color:#bbb;letter-spacing:0.08em;text-transform:uppercase;width:100%;max-width:500px;margin-bottom:0.4rem;padding-left:2px;}
+.category-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;width:100%;max-width:500px;margin-bottom:0.9rem;}
+.cat-btn{position:relative;border:2.5px solid transparent;border-radius:14px;padding:0.65rem 0.2rem 0.6rem;cursor:pointer;transition:all 0.22s cubic-bezier(.34,1.56,.64,1);text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.06);user-select:none;background:white;}
+.cat-btn:hover{transform:translateY(-3px) scale(1.05);box-shadow:0 6px 18px rgba(0,0,0,0.11);}
+.cat-btn.selected{border-color:var(--cc);box-shadow:0 4px 14px rgba(0,0,0,0.12);}
+.cat-btn.confirm-pulse{animation:cPulse 0.35s ease;}
+@keyframes cPulse{0%{transform:scale(1)}40%{transform:scale(1.12)}100%{transform:scale(1)}}
+.cat-icon{font-size:1.4rem;display:block;margin-bottom:1px;position:relative;line-height:1.3;}
+.cat-done-badge{position:absolute;top:-2px;right:-2px;background:#4CAF8A;color:white;border-radius:50%;width:14px;height:14px;font-size:0.5rem;display:flex;align-items:center;justify-content:center;font-weight:900;border:1.5px solid white;}
+.cat-name{font-size:0.63rem;font-weight:800;color:#444;line-height:1.2;}
+.cat-count{font-size:0.54rem;color:#ccc;font-weight:600;margin-top:1px;}
+
+.random-btn{background:linear-gradient(135deg,#2D2D2D,#444);color:white;border:none;border-radius:50px;padding:0.85rem 2rem;font-size:0.95rem;font-weight:900;font-family:'Nunito',sans-serif;cursor:pointer;transition:all 0.2s;box-shadow:0 5px 18px rgba(0,0,0,0.2);width:100%;max-width:500px;margin-bottom:0.5rem;}
+.random-btn:hover{background:linear-gradient(135deg,#111,#333);transform:scale(1.02);box-shadow:0 7px 22px rgba(0,0,0,0.28);}
+.hint-text{font-size:0.74rem;color:#ccc;text-align:center;font-weight:600;}
+
+#ripple-overlay{position:fixed;inset:0;pointer-events:none;z-index:50;overflow:hidden;}
+.ripple-circle{position:absolute;border-radius:50%;transform:scale(0);animation:rippleGrow 0.65s cubic-bezier(0.22,1,0.36,1) forwards;}
+@keyframes rippleGrow{0%{transform:scale(0)}100%{transform:scale(40)}}
+#confetti-canvas{position:fixed;inset:0;pointer-events:none;z-index:200;}
+
+#fc-screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:60;opacity:0;pointer-events:none;transition:opacity 0.25s;padding:0.5rem;}
+#fc-screen.visible{opacity:1;pointer-events:all;}
+
+.fc-topbar{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;padding:0.85rem 1rem;gap:10px;z-index:2;}
+.fc-progress-track{flex:1;height:8px;border-radius:10px;overflow:hidden;background:rgba(255,255,255,0.28);}
+.fc-progress-fill{height:100%;background:white;border-radius:10px;transition:width 0.5s ease;opacity:0.9;}
+.fc-close{background:rgba(255,255,255,0.25);border:none;border-radius:50%;width:34px;height:34px;font-size:1rem;cursor:pointer;color:white;font-weight:900;display:flex;align-items:center;justify-content:center;transition:background 0.2s;}
+.fc-close:hover{background:rgba(255,255,255,0.45);}
+.fc-counter{font-size:0.82rem;font-weight:800;color:rgba(255,255,255,0.9);white-space:nowrap;}
+
+.fc-card-wrap{width:100%;max-width:420px;position:relative;touch-action:none;}
+.swipe-hint{position:absolute;top:38%;transform:translateY(-50%);font-size:1.6rem;opacity:0;transition:opacity 0.15s;pointer-events:none;}
+.swipe-hint.left{right:-2.2rem;}
+.swipe-hint.right{left:-2.2rem;}
+
+.fc-card{background:white;border-radius:28px;overflow:hidden;box-shadow:0 16px 50px rgba(0,0,0,0.18);transition:transform 0.08s ease;user-select:none;}
+.fc-card.swiping{transition:none;}
+.fc-card.swipe-left{animation:swipeLeft 0.36s cubic-bezier(0.55,0,1,0.45) forwards;}
+.fc-card.swipe-right{animation:swipeRight 0.36s cubic-bezier(0.55,0,1,0.45) forwards;}
+.fc-card.enter-right{animation:enterRight 0.36s cubic-bezier(0.22,1,0.36,1) forwards;}
+.fc-card.enter-left{animation:enterLeft 0.36s cubic-bezier(0.22,1,0.36,1) forwards;}
+@keyframes swipeLeft{to{transform:translateX(-130%) rotate(-10deg);opacity:0}}
+@keyframes swipeRight{to{transform:translateX(130%) rotate(10deg);opacity:0}}
+@keyframes enterRight{from{transform:translateX(105%) rotate(6deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes enterLeft{from{transform:translateX(-105%) rotate(-6deg);opacity:0}to{transform:none;opacity:1}}
+
+.fc-image-wrap{width:100%;height:240px;background:#f5f3ee;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;cursor:pointer;}
+.fc-image-wrap img{width:100%;height:100%;object-fit:cover;transition:transform 0.3s;}
+.fc-image-wrap:active img{transform:scale(1.04);}
+.fc-emoji-display{font-size:4.8rem;line-height:1;display:inline-block;}
+.loading-img{display:flex;gap:7px;align-items:center;}
+.loading-dot{width:7px;height:7px;border-radius:50%;background:#ddd;animation:loadPulse 1.2s ease-in-out infinite;}
+.loading-dot:nth-child(2){animation-delay:0.2s;}
+.loading-dot:nth-child(3){animation-delay:0.4s;}
+@keyframes loadPulse{0%,80%,100%{transform:scale(0.6);opacity:0.4}40%{transform:scale(1.1);opacity:1}}
+
+@keyframes bounce{0%,100%{transform:translateY(0) scale(1)}30%{transform:translateY(-28px) scale(1.1)}60%{transform:translateY(-8px) scale(0.95)}}
+@keyframes fly{0%{transform:translateX(0) translateY(0) rotate(0)}25%{transform:translateX(30px) translateY(-25px) rotate(15deg)}50%{transform:translateX(-20px) translateY(-40px) rotate(-10deg)}75%{transform:translateX(20px) translateY(-15px) rotate(8deg)}100%{transform:translateX(0) translateY(0) rotate(0)}}
+@keyframes spin{0%{transform:rotate(0) scale(1)}50%{transform:rotate(180deg) scale(1.2)}100%{transform:rotate(360deg) scale(1)}}
+@keyframes wiggle{0%,100%{transform:rotate(0)}20%{transform:rotate(-18deg) scale(1.1)}40%{transform:rotate(16deg) scale(1.05)}60%{transform:rotate(-10deg)}80%{transform:rotate(8deg)}}
+@keyframes swim{0%,100%{transform:translateX(0) scaleX(1)}30%{transform:translateX(20px) scaleX(1)}50%{transform:translateX(25px) scaleX(-1)}80%{transform:translateX(-5px) scaleX(-1)}90%{transform:translateX(0) scaleX(1)}}
+@keyframes grow{0%{transform:scale(0.5)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(10px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+@keyframes pulse-emoji{0%,100%{transform:scale(1)}50%{transform:scale(1.25)}}
+.anim-bounce{animation:bounce 0.7s cubic-bezier(.36,.07,.19,.97) both;}
+.anim-fly{animation:fly 1s ease-in-out both;}
+.anim-spin{animation:spin 0.7s ease both;}
+.anim-wiggle{animation:wiggle 0.6s ease both;}
+.anim-swim{animation:swim 1s ease-in-out both;}
+.anim-grow{animation:grow 0.5s cubic-bezier(.34,1.56,.64,1) both;}
+.anim-shake{animation:shake 0.5s ease both;}
+.anim-pulse{animation:pulse-emoji 0.5s ease both;}
+
+.tap-ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,0.5);width:60px;height:60px;transform:scale(0);animation:tapRipple 0.5s ease-out forwards;pointer-events:none;}
+@keyframes tapRipple{to{transform:scale(4);opacity:0;}}
+
+.speak-btn{position:absolute;bottom:10px;right:10px;background:rgba(255,255,255,0.95);border:none;border-radius:50%;width:42px;height:42px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.2rem;box-shadow:0 2px 10px rgba(0,0,0,0.14);transition:all 0.2s;z-index:3;}
+.speak-btn:hover{transform:scale(1.14);box-shadow:0 4px 16px rgba(0,0,0,0.2);}
+.speak-btn.speaking{animation:speakPulse 0.6s ease-in-out infinite alternate;}
+@keyframes speakPulse{from{transform:scale(1);box-shadow:0 2px 8px rgba(0,0,0,0.15);}to{transform:scale(1.2);box-shadow:0 4px 20px rgba(76,175,138,0.55);}}
+
+.fc-info{padding:0.9rem 1.3rem 1rem;text-align:center;}
+.fc-cat-pill{display:inline-block;font-size:0.65rem;font-weight:800;padding:3px 10px;border-radius:50px;margin-bottom:0.4rem;text-transform:uppercase;letter-spacing:0.06em;background:rgba(0,0,0,0.07);color:#666;}
+
+.fc-word-area{cursor:pointer;padding:3px 0 1px;}
+.fc-word-hint{font-size:0.65rem;color:#ccc;margin-bottom:3px;transition:opacity 0.3s;font-weight:700;}
+.syllable-row{display:flex;align-items:center;justify-content:center;gap:4px;flex-wrap:wrap;}
+.syllable{font-size:1.65rem;font-weight:900;color:#2D2D2D;padding:3px 10px;border-radius:11px;background:#f0ede8;transition:background 0.25s,color 0.25s,transform 0.15s;cursor:pointer;border:2px solid transparent;touch-action:manipulation;}
+.syllable:hover{background:#e8e4df;transform:scale(1.06);}
+.syllable.active{border-color:#4CAF8A;background:#e8f8f0;transform:scale(1.12);}
+.syllable.done{background:#4CAF8A;color:white;transform:scale(1.09);border-color:#4CAF8A;}
+.syllable-sep{font-size:1rem;font-weight:900;color:#ddd;}
+.fc-word-single{font-size:1.85rem;font-weight:900;color:#2D2D2D;padding:4px 0;font-family:'Baloo 2',cursive;}
+.fc-en{font-size:0.83rem;color:#bbb;font-weight:600;margin-top:2px;}
+.syll-complete-msg{font-size:0.8rem;font-weight:800;color:#4CAF8A;margin-top:5px;opacity:0;transition:opacity 0.3s;}
+.syll-complete-msg.show{opacity:1;}
+
+.swipe-guide{display:flex;gap:1.4rem;margin-top:1rem;align-items:center;}
+.sg-item{display:flex;align-items:center;gap:5px;font-size:0.74rem;color:rgba(255,255,255,0.65);font-weight:800;}
+
+.fc-done{text-align:center;padding:2rem 1.4rem;display:flex;flex-direction:column;align-items:center;}
+.fc-done-emoji{font-size:3.8rem;margin-bottom:0.4rem;animation:starPop 0.5s cubic-bezier(.34,1.56,.64,1);}
+@keyframes starPop{from{transform:scale(0) rotate(-25deg)}to{transform:scale(1) rotate(0)}}
+.fc-done-title{font-family:'Baloo 2',cursive;font-size:1.7rem;font-weight:800;color:#2D2D2D;margin-bottom:0.2rem;}
+.fc-done-sub{font-size:0.86rem;color:#999;margin-bottom:1.4rem;font-weight:600;}
+.done-btns{display:flex;gap:10px;}
+.done-btn{border:none;border-radius:50px;padding:0.8rem 1.3rem;font-size:0.88rem;font-weight:900;font-family:'Nunito',sans-serif;cursor:pointer;transition:all 0.2s;}
+.done-btn.primary{background:#FF7B54;color:white;box-shadow:0 4px 14px rgba(255,123,84,0.38);}
+.done-btn.primary:hover{background:#ff6435;transform:scale(1.04);}
+.done-btn.secondary{background:#f0ede8;color:#666;}
+.done-btn.secondary:hover{background:#e6e2dc;}
+
+/* ── SPLASH SCREEN ──────────────────────────────────────────────────────────── */
+#splash{
+  position:fixed;inset:0;z-index:999;
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  transition:opacity 0.6s ease,transform 0.6s cubic-bezier(.55,0,.1,1);
+  font-family:'DM Sans',sans-serif;
+}
+#splash.hiding{opacity:0;transform:translateY(-105%);}
+#splash-bg{
+  position:absolute;inset:0;
+  transition:background 1.4s cubic-bezier(.4,0,.2,1);
+}
+
+/* Cielo canvas */
+#splash-canvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;}
+
+/* Sol y luna — entran/salen por los lados */
+#sky-body{
+  position:absolute;top:12%;
+  width:72px;height:72px;
+  pointer-events:none;
+  transition:left 1.1s cubic-bezier(.4,0,.2,1),
+             right 1.1s cubic-bezier(.4,0,.2,1),
+             opacity 0.7s ease;
+}
+/* Sol entra por derecha, luna entra por izquierda */
+#sky-body.day-pos  { left:auto; right:7%; opacity:1; }
+#sky-body.night-pos{ right:auto; left:6%; opacity:1; }
+#sky-body.offscreen-right{ left:auto; right:-20%; opacity:0; }
+#sky-body.offscreen-left { right:auto; left:-20%; opacity:0; }
+
+/* Sombra del búho (escena de entrada noche) */
+#buho-shadow{
+  position:absolute;
+  bottom:60px;left:50%;
+  width:320px;height:320px;
+  border-radius:50%;
+  background:radial-gradient(ellipse,rgba(30,10,70,0.55) 0%,transparent 72%);
+  transform:translateX(-50%) scale(0);
+  pointer-events:none;
+  transition:transform 0.9s cubic-bezier(.34,1.12,.64,1),opacity 0.5s;
+  opacity:0;z-index:1;
+}
+
+/* Personaje único — posicionado absolutamente */
+#splash-char{
+  position:absolute;
+  width:175px;height:195px;
+  bottom:115px;left:calc(50% - 87px);
+  transform-origin:center bottom;
+  cursor:pointer;z-index:3;
+  will-change:transform,opacity;
+  display:none;
+}
+#splash-char svg{width:100%;height:100%;}
+#splash-char.idle-bob{animation:idleBob 3.2s ease-in-out infinite;}
+#splash-char.char-bounce{animation:charBounce 0.55s cubic-bezier(.34,1.56,.64,1);}
+@keyframes idleBob{
+  0%,100%{transform:translateY(0) scale(1)}
+  50%{transform:translateY(-9px) scale(1)}
+}
+@keyframes charBounce{
+  0%  {transform:scale(1)}
+  25% {transform:scale(1.1,0.88) translateY(8px)}
+  55% {transform:scale(0.94,1.08) translateY(-14px)}
+  75% {transform:scale(1.04,0.96)}
+  100%{transform:scale(1)}
+}
+
+/* Texto — centrado, con transición propia */
+#splash-text{
+  position:absolute;
+  top:13%;width:100%;
+  text-align:center;padding:0 32px;
+  z-index:4;
+  transition:opacity 0.5s ease,transform 0.5s cubic-bezier(.34,1.12,.64,1);
+}
+#splash-text.hidden-text{opacity:0;transform:translateY(-18px);}
+.sp-greeting{
+  font-size:11px;font-weight:700;letter-spacing:0.12em;
+  text-transform:uppercase;opacity:0.6;margin-bottom:4px;display:block;
+  transition:color 1.2s;
+}
+.sp-title{
+  font-size:33px;font-weight:900;line-height:1.06;
+  margin-bottom:6px;display:block;transition:color 1.2s;
+}
+.sp-sub{font-size:14px;font-weight:400;opacity:0.62;display:block;transition:color 1.2s;}
+
+/* Botón centrado abajo */
+#splash-btn-wrap{
+  position:absolute;bottom:52px;left:0;right:0;
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+  z-index:5;
+  transition:opacity 0.5s ease,transform 0.5s cubic-bezier(.34,1.12,.64,1);
+}
+#splash-btn-wrap.hidden-text{opacity:0;transform:translateY(18px);}
+#splash-btn{
+  border:none;border-radius:50px;padding:15px 52px;
+  font-size:18px;font-weight:900;font-family:'DM Sans',sans-serif;
+  cursor:pointer;transition:transform 0.22s cubic-bezier(.34,1.56,.64,1),box-shadow 0.2s;
+  box-shadow:0 6px 24px rgba(0,0,0,0.16);
+}
+#splash-btn:hover{transform:scale(1.07);}
+#splash-btn:active{transform:scale(0.96);}
+.sp-swipe-hint{
+  font-size:11px;font-weight:700;opacity:0.35;letter-spacing:0.06em;white-space:nowrap;
+}
+#sp-time{
+  position:absolute;top:18px;left:20px;z-index:6;
+  font-size:11px;font-weight:700;opacity:0.45;
+  transition:color 1.2s;
+}
+#sp-toggle{
+  position:absolute;top:14px;right:14px;z-index:6;
+  background:rgba(255,255,255,0.18);border:none;border-radius:20px;
+  padding:5px 13px;font-size:10px;font-weight:700;
+  font-family:'DM Sans',sans-serif;cursor:pointer;
+  transition:background 0.2s,color 0.3s;letter-spacing:0.04em;
+}
+#sp-toggle:hover{background:rgba(255,255,255,0.32);}
+
+/* Partículas */
+.sp-particle{
+  position:absolute;border-radius:50%;pointer-events:none;
+  animation:spParticle 0.85s ease-out forwards;
+}
+@keyframes spParticle{
+  0%{opacity:1;transform:scale(1) translate(0,0);}
+  100%{opacity:0;transform:scale(0.3) translate(var(--tx),var(--ty));}
+}
+
+/* ── KEYFRAMES CINEMATOGRÁFICOS ──────────────────────────────────────────── */
+
+/* COCO entra desde atrás-izquierda, crece al frente */
+@keyframes cocoEntrada{
+  0%  {left:-60%;bottom:30px;transform:scale(0.25);opacity:0;}
+  40% {opacity:1;}
+  70% {left:calc(50% - 85px);bottom:130px;transform:scale(1.08);}
+  85% {transform:scale(0.96);}
+  100%{left:calc(50% - 85px);bottom:110px;transform:scale(1);}
+}
+/* COCO gira en círculos y escapa por la derecha (asustado por Bú) */
+@keyframes cocoEscape{
+  0%  {left:calc(50% - 85px);bottom:110px;transform:scale(1) rotate(0deg);opacity:1;}
+  20% {left:35%;bottom:130px;transform:scale(0.95) rotate(180deg);}
+  40% {left:60%;bottom:90px;transform:scale(0.9) rotate(360deg);}
+  60% {left:80%;bottom:110px;transform:scale(0.8) rotate(500deg);}
+  80% {left:110%;bottom:100px;transform:scale(0.6) rotate(620deg);}
+  100%{left:130%;bottom:80px;transform:scale(0.4) rotate(720deg);opacity:0;}
+}
+/* COCO idle bob suave */
+@keyframes cocoIdle{
+  0%,100%{transform:scale(1) translateY(0);}
+  50%{transform:scale(1) translateY(-9px);}
+}
+/* COCO saludo — salta y ríe (final entrada día) */
+@keyframes cocoSaludo{
+  0%  {transform:scale(1) translateY(0) rotate(0);}
+  20% {transform:scale(1.1,0.88) translateY(10px) rotate(-3deg);}
+  45% {transform:scale(0.92,1.1) translateY(-22px) rotate(5deg);}
+  65% {transform:scale(1.06,0.94) translateY(-6px) rotate(-2deg);}
+  80% {transform:scale(0.98,1.04) translateY(-12px) rotate(2deg);}
+  100%{transform:scale(1) translateY(0) rotate(0);}
+}
+/* COCO gesto mano viendo al búho alejarse */
+@keyframes cocoGesto{
+  0%  {transform:scale(1) rotate(0);}
+  25% {transform:scale(1) rotate(-8deg);}
+  50% {transform:scale(1) rotate(8deg);}
+  75% {transform:scale(1) rotate(-4deg);}
+  100%{transform:scale(1) rotate(0);}
+}
+
+/* BÚ entra desde atrás-derecha, crece al frente (con sombra primero) */
+@keyframes buhoEntrada{
+  0%  {right:-60%;bottom:30px;transform:scale(0.22);opacity:0;}
+  30% {opacity:1;}
+  65% {right:calc(50% - 85px);bottom:138px;transform:scale(1.1);}
+  82% {transform:scale(0.94);}
+  100%{right:calc(50% - 85px);bottom:118px;transform:scale(1);}
+}
+/* BÚ choca con pantalla, cae y se levanta */
+@keyframes buhoChoque{
+  0%  {right:calc(50% - 85px);bottom:118px;transform:scale(1) rotate(0);}
+  15% {right:calc(50% - 85px);bottom:118px;transform:scale(1.1) rotate(-8deg);}
+  28% {right:calc(50% - 85px);bottom:20px;transform:scale(1.15,0.7) rotate(12deg);}
+  42% {right:calc(50% - 85px);bottom:-30px;transform:scale(0.95,0.6) rotate(-5deg);opacity:1;}
+  55% {right:calc(50% - 85px);bottom:40px;transform:scale(1.05,0.9) rotate(3deg);}
+  70% {right:calc(50% - 85px);bottom:118px;transform:scale(0.97,1.06) rotate(-2deg);}
+  85% {right:calc(50% - 85px);bottom:112px;transform:scale(1.03,0.97) rotate(1deg);}
+  100%{right:calc(50% - 85px);bottom:118px;transform:scale(1) rotate(0);}
+}
+/* BÚ saludo — sonrisa al usuario */
+@keyframes buhoSaludo{
+  0%  {transform:scale(1) rotate(0);}
+  30% {transform:scale(1.08) rotate(-6deg);}
+  60% {transform:scale(1.08) rotate(6deg);}
+  100%{transform:scale(1) rotate(0);}
+}
+/* BÚ idle */
+@keyframes buhoIdle{
+  0%,100%{transform:scale(1) translateY(0);}
+  50%{transform:scale(1) translateY(-10px);}
+}
+/* BÚ escapa volando — sube hacia arriba-derecha */
+@keyframes buhoEscape{
+  0%  {right:calc(50% - 85px);bottom:118px;transform:scale(1) rotate(0);opacity:1;}
+  30% {right:15%;bottom:220px;transform:scale(0.85) rotate(-20deg);}
+  60% {right:-10%;bottom:380px;transform:scale(0.65) rotate(-35deg);}
+  80% {right:-30%;bottom:500px;transform:scale(0.45) rotate(-45deg);}
+  100%{right:-60%;bottom:650px;transform:scale(0.2) rotate(-60deg);opacity:0;}
+}
+/* Sol entra por derecha */
+@keyframes solEntrada{
+  0%{right:-20%;opacity:0;}100%{right:7%;opacity:1;}
+}
+/* Sol sale por derecha */
+@keyframes solSalida{
+  0%{right:7%;opacity:1;}100%{right:-20%;opacity:0;}
+}
+/* Luna entra por izquierda */
+@keyframes lunaEntrada{
+  0%{left:-20%;opacity:0;}100%{left:6%;opacity:1;}
+}
+/* Luna sale por izquierda */
+@keyframes lunaSalida{
+  0%{left:6%;opacity:1;}100%{left:-20%;opacity:0;}
+}
+
+/* ── RESPONSIVE ───────────────────────────────────────────────────────────── */
+/* Tablet ≥ 600px */
+@media(min-width:600px){
+  .category-grid{grid-template-columns:repeat(5,1fr);gap:9px;max-width:640px;}
+  .home-header{max-width:640px;}
+  .section-label{max-width:640px;}
+  .random-btn{max-width:640px;}
+  .home-title{font-size:2rem;}
+  .cat-btn{padding:0.8rem 0.3rem;}
+  .cat-icon{font-size:1.6rem;}
+  .cat-name{font-size:0.7rem;}
+  .cat-count{font-size:0.58rem;}
+  .fc-card-wrap{max-width:480px;}
+  .fc-image-wrap{height:260px;}
+  .fc-word-single{font-size:2.1rem;}
+}
+/* Desktop ≥ 1024px */
+@media(min-width:1024px){
+  #home{flex-direction:row;align-items:flex-start;justify-content:center;
+        padding:2rem;gap:2.5rem;overflow-y:auto;}
+  .home-left{display:flex;flex-direction:column;align-items:center;
+              width:320px;flex-shrink:0;position:sticky;top:2rem;}
+  .home-right{flex:1;max-width:720px;}
+  .home-header{max-width:320px;margin-bottom:1rem;}
+  .random-btn{max-width:320px;}
+  .category-grid{grid-template-columns:repeat(4,1fr);max-width:720px;gap:10px;}
+  .section-label{max-width:720px;}
+  .cat-btn{padding:0.9rem 0.3rem;}
+  .cat-icon{font-size:1.7rem;}
+  .cat-name{font-size:0.72rem;}
+  .fc-card-wrap{max-width:520px;}
+  .fc-image-wrap{height:280px;}
+  .fc-word-single{font-size:2.2rem;}
+  .fc-info{padding:1.1rem 1.6rem 1.2rem;}
+}
+
+/* ── DADO MODO ALEATORIO ──────────────────────────────────────────────────── */
+.random-btn{position:relative;overflow:hidden;}
+.dice-icon{display:inline-block;font-size:1.4rem;margin-right:6px;transition:transform 0.3s;}
+.random-btn:hover .dice-icon{animation:diceRoll 0.5s ease infinite;}
+@keyframes diceRoll{0%{transform:rotate(0)}25%{transform:rotate(90deg)}50%{transform:rotate(180deg)}75%{transform:rotate(270deg)}100%{transform:rotate(360deg)}}
+
+#dice-overlay{
+  position:fixed;inset:0;z-index:200;pointer-events:none;
+  display:none;
+}
+#dice-overlay.active{display:block;}
+.dice-sweep{
+  position:absolute;border-radius:18px;
+  background:linear-gradient(135deg,rgba(255,255,255,0.9),rgba(255,255,255,0.4));
+  pointer-events:none;
+  animation:diceSweep 0.12s ease-out forwards;
+}
+@keyframes diceSweep{
+  0%{opacity:0.9;transform:scale(1.08);}
+  100%{opacity:0;transform:scale(0.95);}
+}
+.dice-final-flash{
+  position:absolute;inset:0;border-radius:18px;
+  background:rgba(255,255,255,0.6);
+  animation:diceFlash 0.4s ease-out forwards;
+}
+@keyframes diceFlash{0%{opacity:1}100%{opacity:0}}
+
+/* ── CARTAS DE EXCLUSIVIDAD ──────────────────────────────────────────────── */
+#exclusive-overlay{
+  position:fixed;inset:0;z-index:300;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,0);pointer-events:none;
+  transition:background 0.5s;
+}
+#exclusive-overlay.active{background:rgba(0,0,0,0.75);pointer-events:all;}
+
+.excl-card{
+  width:min(340px,90vw);border-radius:28px;padding:2rem 1.8rem;
+  text-align:center;position:relative;overflow:hidden;
+  transform:scale(0) rotate(-8deg);opacity:0;
+  transition:transform 0.6s cubic-bezier(.34,1.56,.64,1),opacity 0.4s;
+  box-shadow:0 24px 60px rgba(0,0,0,0.35);
+}
+.excl-card.show{transform:scale(1) rotate(0);opacity:1;}
+
+/* Variante categoría — cálida */
+.excl-card.cat-card{
+  background:linear-gradient(145deg,#fff9f0,#fff3e0);
+  border:3px solid #FF9B54;
+}
+/* Variante aleatoria — dorada */
+.excl-card.random-card{
+  background:linear-gradient(145deg,#1a1200,#2d2000);
+  border:3px solid #FFD700;
+  color:#FFF8E1;
+}
+.excl-card.random-card::before{
+  content:'';position:absolute;inset:-2px;border-radius:28px;
+  background:linear-gradient(135deg,#FFD700,#FF8C00,#FFD700,#FFA500);
+  z-index:-1;animation:goldShimmer 2s linear infinite;
+}
+@keyframes goldShimmer{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+
+.excl-char{font-size:4rem;margin-bottom:0.5rem;display:block;animation:exclFloat 3s ease-in-out infinite;}
+@keyframes exclFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.excl-stars{font-size:1.2rem;margin-bottom:0.6rem;display:block;letter-spacing:3px;}
+.excl-title{font-family:'Baloo 2',cursive;font-size:1.5rem;font-weight:800;margin-bottom:0.4rem;}
+.excl-text{font-size:0.92rem;font-weight:600;opacity:0.8;line-height:1.5;margin-bottom:0.3rem;}
+.excl-quote{font-size:0.82rem;opacity:0.6;font-style:italic;margin-bottom:1.2rem;line-height:1.4;}
+.excl-author{font-size:0.75rem;font-weight:800;opacity:0.5;letter-spacing:0.08em;text-transform:uppercase;}
+
+.excl-btn{
+  border:none;border-radius:50px;padding:12px 36px;
+  font-size:1rem;font-weight:900;font-family:'Nunito',sans-serif;
+  cursor:pointer;transition:transform 0.2s cubic-bezier(.34,1.56,.64,1);
+  margin-top:1.2rem;
+}
+.excl-btn:hover{transform:scale(1.08);}
+.cat-card .excl-btn{background:#FF7B54;color:white;box-shadow:0 4px 14px rgba(255,123,84,0.38);}
+.random-card .excl-btn{background:#FFD700;color:#1a1200;box-shadow:0 4px 14px rgba(255,215,0,0.4);}
+
+/* Partículas doradas */
+.gold-particle{
+  position:absolute;width:6px;height:6px;border-radius:50%;
+  background:#FFD700;pointer-events:none;
+  animation:goldFly 1.2s ease-out forwards;
+}
+@keyframes goldFly{0%{opacity:1;transform:scale(1) translate(0,0)}100%{opacity:0;transform:scale(0.2) translate(var(--gx),var(--gy))}}
+
+/* ── BOTONES MENÚ PRINCIPAL ──────────────────────────────────────────────── */
+.home-action-row{
+  display:flex;gap:9px;width:100%;max-width:500px;margin-bottom:0.7rem;
+}
+.home-action-btn{
+  flex:1;border:none;border-radius:14px;padding:0.7rem 0.5rem;
+  font-size:0.82rem;font-weight:900;font-family:'Nunito',sans-serif;
+  cursor:pointer;transition:all 0.22s cubic-bezier(.34,1.56,.64,1);
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.07);
+}
+.home-action-btn:hover{transform:translateY(-2px) scale(1.04);}
+.home-action-btn:active{transform:scale(0.96);}
+.home-action-btn .btn-icon{font-size:1.3rem;}
+.home-action-btn.btn-splash{background:#EDE0FF;color:#4A3080;}
+.home-action-btn.btn-cards{background:#FFF0E0;color:#FF6B35;position:relative;}
+.unlock-badge{
+  position:absolute;top:-4px;right:-4px;
+  background:#FF7B54;color:white;border-radius:50%;
+  width:18px;height:18px;font-size:0.58rem;font-weight:900;
+  display:flex;align-items:center;justify-content:center;
+  border:2px solid white;
+}
+
+/* ── PANTALLA COLECCIÓN DE TARJETAS ──────────────────────────────────────── */
+#collection-screen{
+  position:fixed;inset:0;z-index:80;
+  background:#FFF8F0;
+  display:flex;flex-direction:column;
+  opacity:0;pointer-events:none;
+  transition:opacity 0.3s;
+  overflow:hidden;
+}
+#collection-screen.visible{opacity:1;pointer-events:all;}
+
+.coll-header{
+  display:flex;align-items:center;gap:10px;
+  padding:1rem 1.2rem 0.8rem;
+  background:linear-gradient(135deg,#FF7B54,#FF9B54);
+  flex-shrink:0;
+}
+.coll-back{
+  background:rgba(255,255,255,0.25);border:none;border-radius:50%;
+  width:36px;height:36px;font-size:1.1rem;cursor:pointer;
+  color:white;font-weight:900;display:flex;align-items:center;justify-content:center;
+}
+.coll-title{font-family:'Baloo 2',cursive;font-size:1.3rem;font-weight:800;color:white;flex:1;}
+.coll-count{font-size:0.78rem;font-weight:700;color:rgba(255,255,255,0.8);}
+
+.coll-tabs{
+  display:flex;gap:0;border-bottom:2px solid #f0ede8;
+  background:white;flex-shrink:0;
+}
+.coll-tab{
+  flex:1;padding:0.65rem 0;font-size:0.78rem;font-weight:800;
+  border:none;background:none;cursor:pointer;
+  color:#aaa;border-bottom:3px solid transparent;margin-bottom:-2px;
+  font-family:'Nunito',sans-serif;transition:color 0.2s,border-color 0.2s;
+}
+.coll-tab.active{color:#FF7B54;border-bottom-color:#FF7B54;}
+
+.coll-body{flex:1;overflow-y:auto;padding:1rem;}
+
+.coll-section-title{
+  font-size:0.7rem;font-weight:800;color:#bbb;letter-spacing:0.08em;
+  text-transform:uppercase;margin-bottom:0.6rem;margin-top:0.3rem;
+}
+
+/* Grid de tarjetas desbloqueadas */
+.coll-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.2rem;
+}
+.coll-card{
+  border-radius:14px;padding:0.7rem 0.4rem;text-align:center;
+  background:white;box-shadow:0 2px 8px rgba(0,0,0,0.07);
+  transition:transform 0.2s;position:relative;overflow:hidden;
+}
+.coll-card:active{transform:scale(0.96);}
+.coll-card.locked{background:#f8f6f4;opacity:0.5;}
+.coll-card-icon{font-size:1.6rem;display:block;margin-bottom:2px;}
+.coll-card-word{font-size:0.62rem;font-weight:800;color:#444;line-height:1.2;}
+.coll-card-en{font-size:0.55rem;color:#bbb;font-weight:600;}
+.coll-card.exclusive{
+  background:linear-gradient(145deg,#1a1200,#2d2000);
+  border:2px solid #FFD700;
+}
+.coll-card.exclusive .coll-card-word{color:#FFD700;}
+.coll-card.exclusive .coll-card-en{color:#FF8C00;}
+.coll-lock{font-size:0.7rem;color:#ccc;margin-top:2px;}
+
+/* Progreso de desbloqueo */
+.coll-progress-bar{
+  width:100%;background:#f0ede8;border-radius:50px;height:6px;margin:0.3rem 0 0.6rem;
+}
+.coll-progress-fill{height:100%;border-radius:50px;background:#FF7B54;transition:width 0.5s;}
+
+/* Barra de progreso hacia carta emotiva */
+.unlock-progress-wrap{
+  background:white;border-radius:14px;padding:0.8rem 1rem;
+  margin-bottom:0.8rem;box-shadow:0 2px 8px rgba(0,0,0,0.06);
+}
+.unlock-label{font-size:0.72rem;font-weight:800;color:#888;margin-bottom:4px;display:flex;justify-content:space-between;}
+</style>
+</head>
+<body>
+<canvas id="confetti-canvas"></canvas>
+
+<!-- ── SPLASH SCREEN ─────────────────────────────────────────────────────── -->
+<div id="splash">
+  <div id="splash-bg"></div>
+  <canvas id="splash-canvas"></canvas>
+  <div id="sky-body"></div>
+  <div id="buho-shadow"></div>
+  <div id="splash-char"></div>
+
+  <div id="splash-text" class="hidden-text">
+    <span class="sp-greeting" id="sp-greeting"></span>
+    <span class="sp-title" id="sp-title"></span>
+    <span class="sp-sub" id="sp-sub"></span>
+  </div>
+
+  <span id="sp-time"></span>
+  <button id="sp-toggle" onclick="spToggleMode()"></button>
+
+  <div id="splash-btn-wrap" class="hidden-text">
+    <button id="splash-btn" onclick="splashEnter()"></button>
+    <span class="sp-swipe-hint">desliza para entrar ↑</span>
+  </div>
+</div>
+<div id="dice-overlay"></div>
+<div id="exclusive-overlay"></div>
+
+<div id="app">
+  <div id="home">
+    <div class="home-header">
+      <span class="home-emoji">🎒</span>
+      <h1 class="home-title">¡Aprende palabras!</h1>
+      <p class="home-sub">Elige una categoría para empezar</p>
+    </div>
+    <!-- Botones de acción rápida -->
+    <div class="home-action-row">
+      <button class="home-action-btn btn-splash" onclick="goBackToSplash()">
+        <span class="btn-icon">🏠</span>
+        <span>Inicio</span>
+      </button>
+      <button class="home-action-btn btn-cards" id="collectionBtn" onclick="openCollection()">
+        <span class="btn-icon">🃏</span>
+        <span>Mis Tarjetas</span>
+        <span class="unlock-badge" id="newCardsBadge" style="display:none;">0</span>
+      </button>
+    </div>
+    <p class="section-label">Categorías</p>
+    <div class="category-grid" id="catGrid"></div>
+    <button class="random-btn" id="randomBtn" onclick="animateDiceAndStart()"><span class="dice-icon">🎲</span> Modo aleatorio — ¡sorpréndeme!</button>
+    <p class="hint-text" id="hintText">Toca dos veces una categoría para empezar</p>
+  </div>
+  <div id="ripple-overlay"></div>
+  <div id="fc-screen">
+    <div class="fc-topbar">
+      <button class="fc-close" onclick="closeCards()">✕</button>
+      <div class="fc-progress-track"><div class="fc-progress-fill" id="progressFill"></div></div>
+      <span class="fc-counter" id="fcCounter">1/20</span>
+    </div>
+    <div class="fc-card-wrap" id="fcCardWrap">
+      <div class="swipe-hint left" id="hintLeft">→</div>
+      <div class="swipe-hint right" id="hintRight">←</div>
+      <div class="fc-card" id="fcCard">
+        <div class="fc-image-wrap" id="fcImgWrap"></div>
+        <div class="fc-info">
+          <span class="fc-cat-pill" id="fcCatLabel2"></span>
+          <div class="fc-word-area" id="fcWordArea"></div>
+          <div class="fc-en" id="fcEn"></div>
+          <div class="syll-complete-msg" id="syllMsg">¡Genial! 🌟 Desliza para continuar →</div>
+        </div>
+      </div>
+    </div>
+    <div class="swipe-guide" id="swipeGuide">
+      <div class="sg-item"><span>←</span> anterior</div>
+      <div class="sg-item">desliza la imagen</div>
+      <div class="sg-item">siguiente <span>→</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── PANTALLA COLECCIÓN DE TARJETAS ─────────────────────────────────────── -->
+<div id="collection-screen">
+  <div class="coll-header">
+    <button class="coll-back" onclick="closeCollection()">←</button>
+    <span class="coll-title">Mis Tarjetas 🃏</span>
+    <span class="coll-count" id="collCount">0 desbloqueadas</span>
+  </div>
+  <div class="coll-tabs">
+    <button class="coll-tab active" id="tab-emotivas" onclick="switchCollTab('emotivas')">Emotivas ⭐</button>
+    <button class="coll-tab" id="tab-exclusivas" onclick="switchCollTab('exclusivas')">Exclusivas 🥇</button>
+  </div>
+  <div class="coll-body" id="collBody"></div>
+</div>
+<script>
+// ── SPEECH ─────────────────────────────────────────────────────────────────────
+let selectedVoice=null;
+function loadVoices(){
+  const voices=window.speechSynthesis.getVoices();if(!voices.length)return;
+  const priority=[
+    v=>/es[-_](mx|ar|co|cl|pe|ve|419)/i.test(v.lang)&&/female|mujer|paulina|mónica|monica|lucia|lucía|sofia|sofía|valeria|carmen|maria|elena/i.test(v.name),
+    v=>/es[-_](mx|ar|co|cl|pe|ve|419)/i.test(v.lang),
+    v=>/es/i.test(v.lang)&&/female|mujer|paulina|mónica|monica|lucia|lucía|sofia|sofía/i.test(v.name),
+    v=>/es/i.test(v.lang),
+  ];
+  for(const test of priority){const m=voices.find(test);if(m){selectedVoice=m;break;}}
+  if(!selectedVoice&&voices.length)selectedVoice=voices[0];
+}
+window.speechSynthesis.onvoiceschanged=loadVoices;loadVoices();
+// BUG FIX #2: referencia local al botón en lugar de global mutable
+let currentSpeakBtn=null;
+function speak(text){
+  if(!window.speechSynthesis)return;
+  window.speechSynthesis.cancel();
+  const utt=new SpeechSynthesisUtterance(text);
+  if(selectedVoice)utt.voice=selectedVoice;
+  utt.lang='es-MX';utt.rate=0.82;utt.pitch=1.15;utt.volume=1;
+  const btn=currentSpeakBtn;
+  if(btn)btn.classList.add('speaking');
+  utt.onend=()=>{if(btn)btn.classList.remove('speaking');};
+  utt.onerror=()=>{if(btn)btn.classList.remove('speaking');};
+  window.speechSynthesis.speak(utt);
+}
+
+// ── DATOS ──────────────────────────────────────────────────────────────────────
+const CATS={
+  cosas:{label:"Cosas",icon:"🪑",color:"#7B8FF7",items:[
+    {es:"Silla",en:"chair",wiki:"Chair"},{es:"Mesa",en:"table",wiki:"Table_(furniture)"},
+    {es:"Cama",en:"bed",wiki:"Bed"},{es:"Puerta",en:"door",wiki:"Door"},
+    {es:"Ventana",en:"window",wiki:"Window"},{es:"Libro",en:"book",wiki:"Book"},
+    {es:"Lápiz",en:"pencil",wiki:"Pencil"},{es:"Zapato",en:"shoe",wiki:"Shoe"},
+    {es:"Sombrero",en:"hat",wiki:"Hat"},{es:"Reloj",en:"clock",wiki:"Clock"},
+    {es:"Mochila",en:"backpack",wiki:"Backpack"},{es:"Taza",en:"cup",wiki:"Cup"},
+    {es:"Cuchara",en:"spoon",wiki:"Spoon"},{es:"Pelota",en:"ball",wiki:"Ball_(object)"},
+    {es:"Tijeras",en:"scissors",wiki:"Scissors"},{es:"Teléfono",en:"phone",wiki:"Mobile_phone"},
+    {es:"Lámpara",en:"lamp",wiki:"Lamp"},{es:"Espejo",en:"mirror",wiki:"Mirror"},
+    {es:"Llave",en:"key",wiki:"Key_(lock)"},{es:"Botella",en:"bottle",wiki:"Bottle"},
+    {es:"Globo",en:"balloon",wiki:"Balloon"},{es:"Paraguas",en:"umbrella",wiki:"Umbrella"},
+    {es:"Vela",en:"candle",wiki:"Candle"},{es:"Guitarra",en:"guitar",wiki:"Guitar"},
+    {es:"Bicicleta",en:"bicycle",wiki:"Bicycle"},{es:"Avión",en:"airplane",wiki:"Airplane"},
+    {es:"Tren",en:"train",wiki:"Train"},{es:"Barco",en:"ship",wiki:"Ship"},
+    {es:"Cepillo",en:"brush",wiki:"Brush"},{es:"Carro",en:"car",wiki:"Car"},
+    {es:"Mesa",en:"table",wiki:"Table_(furniture)"},{es:"Silla",en:"chair",wiki:"Chair"},
+    {es:"Cama",en:"bed",wiki:"Bed"},{es:"Puerta",en:"door",wiki:"Door"},
+    {es:"Ventana",en:"window",wiki:"Window"},{es:"Lámpara",en:"lamp",wiki:"Lamp"},
+    {es:"Alfombra",en:"carpet",wiki:"Carpet"},{es:"Cortina",en:"curtain",wiki:"Curtain"},
+    {es:"Cojín",en:"cushion",wiki:"Cushion"},{es:"Escalera",en:"ladder",wiki:"Ladder"},
+    {es:"Reloj",en:"clock",wiki:"Clock"},{es:"Cuadro",en:"painting",wiki:"Painting"},
+    {es:"Plato",en:"plate",wiki:"Plate_(dishware)"},{es:"Tenedor",en:"fork",wiki:"Fork"},
+    {es:"Cuchillo",en:"knife",wiki:"Knife"},{es:"Olla",en:"pot",wiki:"Cookware_and_bakeware"},
+    {es:"Sartén",en:"pan",wiki:"Frying_pan"},{es:"Nevera",en:"fridge",wiki:"Refrigerator"},
+    {es:"Horno",en:"oven",wiki:"Oven"},{es:"Lavadora",en:"washing machine",wiki:"Washing_machine"},
+    {es:"Televisor",en:"television",wiki:"Television"},
+    {es:"Computadora",en:"computer",wiki:"Computer"},
+    {es:"Teclado",en:"keyboard",wiki:"Computer_keyboard"},
+    {es:"Ratón",en:"mouse",wiki:"Computer_mouse"},
+    {es:"Impresora",en:"printer",wiki:"Printer_(computing)"},
+    {es:"Cámara",en:"camera",wiki:"Camera"},
+    {es:"Audífonos",en:"headphones",wiki:"Headphones"},
+    {es:"Calculadora",en:"calculator",wiki:"Calculator"}
+  ]},
+  animales:{label:"Animales",icon:"🐘",color:"#4CAF8A",items:[
+    {es:"Perro",en:"dog",wiki:"Dog"},{es:"Gato",en:"cat",wiki:"Cat"},
+    {es:"Elefante",en:"elephant",wiki:"Elephant"},{es:"León",en:"lion",wiki:"Lion"},
+    {es:"Tigre",en:"tiger",wiki:"Tiger"},{es:"Jirafa",en:"giraffe",wiki:"Giraffe"},
+    {es:"Cebra",en:"zebra",wiki:"Zebra"},{es:"Pingüino",en:"penguin",wiki:"Penguin"},
+    {es:"Delfín",en:"dolphin",wiki:"Dolphin"},{es:"Águila",en:"eagle",wiki:"Eagle"},
+    {es:"Oso",en:"bear",wiki:"Bear"},{es:"Lobo",en:"wolf",wiki:"Wolf"},
+    {es:"Zorro",en:"fox",wiki:"Fox"},{es:"Conejo",en:"rabbit",wiki:"Rabbit"},
+    {es:"Tortuga",en:"turtle",wiki:"Turtle"},{es:"Cocodrilo",en:"crocodile",wiki:"Crocodile"},
+    {es:"Mariposa",en:"butterfly",wiki:"Butterfly"},{es:"Abeja",en:"bee",wiki:"Bee"},
+    {es:"Pulpo",en:"octopus",wiki:"Octopus"},{es:"Tiburón",en:"shark",wiki:"Shark"},
+    {es:"Caballo",en:"horse",wiki:"Horse"},{es:"Vaca",en:"cow",wiki:"Cattle"},
+    {es:"Cerdo",en:"pig",wiki:"Pig"},{es:"Pato",en:"duck",wiki:"Duck"},
+    {es:"Gallina",en:"hen",wiki:"Chicken"},{es:"Camello",en:"camel",wiki:"Camel"},
+    {es:"Hipopótamo",en:"hippo",wiki:"Hippopotamus"},{es:"Loro",en:"parrot",wiki:"Parrot"},
+    {es:"Panda",en:"panda",wiki:"Giant_panda"},{es:"Koala",en:"koala",wiki:"Koala"},
+    {es:"Canguro",en:"kangaroo",wiki:"Kangaroo"},{es:"Rana",en:"frog",wiki:"Frog"},
+    {es:"Serpiente",en:"snake",wiki:"Snake"},{es:"Búho",en:"owl",wiki:"Owl"},
+    {es:"Cangrejo",en:"crab",wiki:"Crab"},{es:"Ballena",en:"whale",wiki:"Whale"},
+    {es:"Gorila",en:"gorilla",wiki:"Gorilla"},{es:"Flamenco",en:"flamingo",wiki:"Flamingo"},
+    {es:"Colibrí",en:"hummingbird",wiki:"Hummingbird"},{es:"Murciélago",en:"bat",wiki:"Bat"}
+  ]},
+  cuerpo:{label:"Cuerpo",icon:"👁️",color:"#E8825A",items:[
+    {es:"Ojo",en:"eye",wiki:"Eye"},{es:"Nariz",en:"nose",wiki:"Nose"},
+    {es:"Boca",en:"mouth",wiki:"Mouth"},{es:"Oreja",en:"ear",wiki:"Ear"},
+    {es:"Mano",en:"hand",wiki:"Hand"},{es:"Pie",en:"foot",wiki:"Foot"},
+    {es:"Brazo",en:"arm",wiki:"Arm"},{es:"Pierna",en:"leg",wiki:"Leg"},
+    {es:"Cabeza",en:"head",wiki:"Head"},{es:"Diente",en:"tooth",wiki:"Tooth"},
+    {es:"Cabello",en:"hair",wiki:"Hair"},{es:"Rodilla",en:"knee",wiki:"Knee"},
+    {es:"Codo",en:"elbow",wiki:"Elbow"},{es:"Hombro",en:"shoulder",wiki:"Shoulder"},
+    {es:"Dedo",en:"finger",wiki:"Finger"},{es:"Uña",en:"nail",wiki:"Nail_(anatomy)"},
+    {es:"Espalda",en:"back",wiki:"Human_back"},{es:"Cuello",en:"neck",wiki:"Neck"},
+    {es:"Mejilla",en:"cheek",wiki:"Cheek"},{es:"Frente",en:"forehead",wiki:"Forehead"},
+    {es:"Ceja",en:"eyebrow",wiki:"Eyebrow"},{es:"Labios",en:"lips",wiki:"Lip"},
+    {es:"Lengua",en:"tongue",wiki:"Tongue"},{es:"Garganta",en:"throat",wiki:"Throat"},
+    {es:"Pecho",en:"chest",wiki:"Chest_(anatomy)"},{es:"Estómago",en:"stomach",wiki:"Stomach"},
+    {es:"Cadera",en:"hip",wiki:"Hip"},{es:"Tobillo",en:"ankle",wiki:"Ankle"},
+    {es:"Talón",en:"heel",wiki:"Heel"},{es:"Pulgar",en:"thumb",wiki:"Thumb"},
+    {es:"Muñeca",en:"wrist",wiki:"Wrist"},{es:"Pantorrilla",en:"calf",wiki:"Calf_(leg)"},
+    {es:"Muslo",en:"thigh",wiki:"Thigh"},{es:"Barbilla",en:"chin",wiki:"Chin"},
+    {es:"Pómulo",en:"cheekbone",wiki:"Zygomatic_bone"},
+    {es:"Sien",en:"temple",wiki:"Temple_(anatomy)"},
+    {es:"Nuca",en:"nape",wiki:"Nape"},{es:"Ombligo",en:"navel",wiki:"Navel"}
+  ]},
+  frutas:{label:"Frutas",icon:"🍎",color:"#F7C948",items:[
+    {es:"Manzana",en:"apple",wiki:"Apple"},{es:"Plátano",en:"banana",wiki:"Banana"},
+    {es:"Naranja",en:"orange",wiki:"Orange_(fruit)"},{es:"Fresa",en:"strawberry",wiki:"Strawberry"},
+    {es:"Uva",en:"grape",wiki:"Grape"},{es:"Sandía",en:"watermelon",wiki:"Watermelon"},
+    {es:"Piña",en:"pineapple",wiki:"Pineapple"},{es:"Mango",en:"mango",wiki:"Mango"},
+    {es:"Pera",en:"pear",wiki:"Pear"},{es:"Limón",en:"lemon",wiki:"Lemon"},
+    {es:"Cereza",en:"cherry",wiki:"Cherry"},{es:"Kiwi",en:"kiwi",wiki:"Kiwifruit"},
+    {es:"Coco",en:"coconut",wiki:"Coconut"},{es:"Durazno",en:"peach",wiki:"Peach"},
+    {es:"Papaya",en:"papaya",wiki:"Papaya"},{es:"Guayaba",en:"guava",wiki:"Guava"},
+    {es:"Maracuyá",en:"passion fruit",wiki:"Passiflora_edulis"},
+    {es:"Melón",en:"melon",wiki:"Melon"},{es:"Ciruela",en:"plum",wiki:"Plum"},
+    {es:"Higo",en:"fig",wiki:"Fig"},{es:"Granada",en:"pomegranate",wiki:"Pomegranate"},
+    {es:"Mandarina",en:"tangerine",wiki:"Mandarin_orange"},
+    {es:"Frambuesa",en:"raspberry",wiki:"Raspberry"},
+    {es:"Arándano",en:"blueberry",wiki:"Blueberry"},
+    {es:"Mora",en:"blackberry",wiki:"Blackberry"},
+    {es:"Nectarina",en:"nectarine",wiki:"Nectarine"},
+    {es:"Albaricoque",en:"apricot",wiki:"Apricot"},
+    {es:"Tamarindo",en:"tamarind",wiki:"Tamarind"},
+    {es:"Carambola",en:"starfruit",wiki:"Averrhoa_carambola"},
+    {es:"Lichee",en:"lychee",wiki:"Lychee"},
+    {es:"Mamey",en:"mamey",wiki:"Pouteria_sapota"},
+    {es:"Pitaya",en:"dragon fruit",wiki:"Selenicereus_undatus"},
+    {es:"Tuna",en:"prickly pear",wiki:"Opuntia"},
+    {es:"Zapote",en:"zapote",wiki:"Zapotilla"},
+    {es:"Jicama",en:"jicama",wiki:"Pachyrhizus_erosus"},
+    {es:"Toronja",en:"grapefruit",wiki:"Grapefruit"},
+    {es:"Noni",en:"noni",wiki:"Morinda_citrifolia"}
+  ]},
+  verduras:{label:"Verduras",icon:"🥕",color:"#56C063",items:[
+    {es:"Zanahoria",en:"carrot",wiki:"Carrot"},{es:"Tomate",en:"tomato",wiki:"Tomato"},
+    {es:"Papa",en:"potato",wiki:"Potato"},{es:"Lechuga",en:"lettuce",wiki:"Lettuce"},
+    {es:"Cebolla",en:"onion",wiki:"Onion"},{es:"Brócoli",en:"broccoli",wiki:"Broccoli"},
+    {es:"Maíz",en:"corn",wiki:"Maize"},{es:"Pepino",en:"cucumber",wiki:"Cucumber"},
+    {es:"Espinaca",en:"spinach",wiki:"Spinach"},{es:"Coliflor",en:"cauliflower",wiki:"Cauliflower"},
+    {es:"Calabaza",en:"pumpkin",wiki:"Pumpkin"},{es:"Berenjena",en:"eggplant",wiki:"Eggplant"},
+    {es:"Rábano",en:"radish",wiki:"Radish"},{es:"Apio",en:"celery",wiki:"Celery"},
+    {es:"Pimiento",en:"pepper",wiki:"Bell_pepper"},{es:"Ajo",en:"garlic",wiki:"Garlic"},
+    {es:"Ejote",en:"green bean",wiki:"Green_bean"},{es:"Chícharo",en:"pea",wiki:"Pea"},
+    {es:"Betabel",en:"beet",wiki:"Beetroot"},{es:"Champiñón",en:"mushroom",wiki:"Mushroom"},
+    {es:"Nabo",en:"turnip",wiki:"Turnip"},{es:"Remolacha",en:"swiss chard",wiki:"Swiss_chard"},
+    {es:"Alcachofa",en:"artichoke",wiki:"Artichoke"},
+    {es:"Espárrago",en:"asparagus",wiki:"Asparagus"},
+    {es:"Puerro",en:"leek",wiki:"Leek"},{es:"Eneldo",en:"dill",wiki:"Anethum_graveolens"},
+    {es:"Cilantro",en:"cilantro",wiki:"Coriander"},
+    {es:"Perejil",en:"parsley",wiki:"Parsley"},
+    {es:"Romero",en:"rosemary",wiki:"Salvia_rosmarinus"},
+    {es:"Albahaca",en:"basil",wiki:"Basil"},
+    {es:"Jengibre",en:"ginger",wiki:"Ginger"},
+    {es:"Aguacate",en:"avocado",wiki:"Avocado"},
+    {es:"Nopal",en:"cactus pad",wiki:"Opuntia"},
+    {es:"Chayote",en:"chayote",wiki:"Sicyos_edulis"},
+    {es:"Jícama",en:"jicama",wiki:"Pachyrhizus_erosus"},
+    {es:"Tomatillo",en:"tomatillo",wiki:"Tomatillo"},
+    {es:"Chile",en:"chili pepper",wiki:"Chili_pepper"},
+    {es:"Hierba buena",en:"mint",wiki:"Mentha"}
+  ]},
+  ropa:{label:"Ropa",icon:"👕",color:"#F06BA0",items:[
+    {es:"Camisa",en:"shirt",wiki:"Shirt"},{es:"Pantalón",en:"pants",wiki:"Trousers"},
+    {es:"Vestido",en:"dress",wiki:"Dress"},{es:"Zapatos",en:"shoes",wiki:"Shoe"},
+    {es:"Calcetín",en:"sock",wiki:"Sock"},{es:"Bufanda",en:"scarf",wiki:"Scarf"},
+    {es:"Gorro",en:"cap",wiki:"Cap_(clothing)"},{es:"Abrigo",en:"coat",wiki:"Coat_(clothing)"},
+    {es:"Chaqueta",en:"jacket",wiki:"Jacket"},{es:"Falda",en:"skirt",wiki:"Skirt"},
+    {es:"Suéter",en:"sweater",wiki:"Sweater"},{es:"Pijama",en:"pajamas",wiki:"Pajamas"},
+    {es:"Cinturón",en:"belt",wiki:"Belt_(clothing)"},{es:"Guante",en:"glove",wiki:"Glove"},
+    {es:"Corbata",en:"tie",wiki:"Necktie"},{es:"Botas",en:"boots",wiki:"Boot"},
+    {es:"Sandalias",en:"sandals",wiki:"Sandal"},{es:"Camiseta",en:"t-shirt",wiki:"T-shirt"},
+    {es:"Uniforme",en:"uniform",wiki:"Uniform"},{es:"Traje",en:"suit",wiki:"Suit_(clothing)"},
+    {es:"Overol",en:"overalls",wiki:"Overall"},{es:"Impermeable",en:"raincoat",wiki:"Raincoat"},
+    {es:"Chaleco",en:"vest",wiki:"Vest"},{es:"Leggings",en:"leggings",wiki:"Leggings"},
+    {es:"Bermudas",en:"shorts",wiki:"Shorts"},{es:"Camisón",en:"nightgown",wiki:"Nightgown"},
+    {es:"Bata",en:"robe",wiki:"Bathrobe"},{es:"Sombrero",en:"hat",wiki:"Hat"},
+    {es:"Gorra",en:"baseball cap",wiki:"Baseball_cap"},{es:"Pañuelo",en:"handkerchief",wiki:"Handkerchief"},
+    {es:"Mochila",en:"backpack",wiki:"Backpack"},{es:"Bolso",en:"handbag",wiki:"Handbag"},
+    {es:"Cartera",en:"wallet",wiki:"Wallet"},{es:"Lentes",en:"glasses",wiki:"Glasses"},
+    {es:"Reloj",en:"watch",wiki:"Watch"},{es:"Aretes",en:"earrings",wiki:"Earring"},
+    {es:"Collar",en:"necklace",wiki:"Necklace"},{es:"Pulsera",en:"bracelet",wiki:"Bracelet"}
+  ]},
+  profesiones:{label:"Profesiones",icon:"👩‍🍳",color:"#9B72CF",items:[
+    {es:"Doctor",en:"doctor",wiki:"Physician"},{es:"Maestro",en:"teacher",wiki:"Teacher"},
+    {es:"Chef",en:"chef",wiki:"Chef"},{es:"Bombero",en:"firefighter",wiki:"Firefighter"},
+    {es:"Piloto",en:"pilot",wiki:"Aviator"},{es:"Policía",en:"police officer",wiki:"Police_officer"},
+    {es:"Dentista",en:"dentist",wiki:"Dentist"},{es:"Ingeniero",en:"engineer",wiki:"Engineer"},
+    {es:"Veterinario",en:"vet",wiki:"Veterinarian"},{es:"Astronauta",en:"astronaut",wiki:"Astronaut"},
+    {es:"Músico",en:"musician",wiki:"Musician"},{es:"Pintor",en:"painter",wiki:"Painter"},
+    {es:"Carpintero",en:"carpenter",wiki:"Carpenter"},{es:"Granjero",en:"farmer",wiki:"Farmer"},
+    {es:"Nadador",en:"swimmer",wiki:"Swimming_(sport)"},{es:"Futbolista",en:"footballer",wiki:"Association_football"},
+    {es:"Bailarín",en:"dancer",wiki:"Dance"},{es:"Actor",en:"actor",wiki:"Actor"},
+    {es:"Escritor",en:"writer",wiki:"Writer"},{es:"Científico",en:"scientist",wiki:"Scientist"},
+    {es:"Panadero",en:"baker",wiki:"Baker"},{es:"Mecánico",en:"mechanic",wiki:"Mechanic"},
+    {es:"Arquitecto",en:"architect",wiki:"Architect"},{es:"Abogado",en:"lawyer",wiki:"Lawyer"},
+    {es:"Contador",en:"accountant",wiki:"Accountant"},{es:"Enfermero",en:"nurse",wiki:"Nurse"},
+    {es:"Fotógrafo",en:"photographer",wiki:"Photographer"},{es:"Periodista",en:"journalist",wiki:"Journalist"},
+    {es:"Cocinero",en:"cook",wiki:"Cook_(profession)"},{es:"Jardinero",en:"gardener",wiki:"Gardener"},
+    {es:"Pescador",en:"fisherman",wiki:"Fishing"},{es:"Electricista",en:"electrician",wiki:"Electrician"},
+    {es:"Fontanero",en:"plumber",wiki:"Plumber"},{es:"Taxista",en:"taxi driver",wiki:"Taxicab"},
+    {es:"Guía turístico",en:"tour guide",wiki:"Tour_guide"},
+    {es:"Árbitro",en:"referee",wiki:"Referee"},{es:"Bibliotecario",en:"librarian",wiki:"Librarian"},
+    {es:"Traductor",en:"translator",wiki:"Translation"}
+  ]},
+  colores:{label:"Colores",icon:"🎨",color:"#D45FBF",items:[
+    {es:"Rojo",en:"red",swatch:"#E53935"},{es:"Azul",en:"blue",swatch:"#1E88E5"},
+    {es:"Verde",en:"green",swatch:"#43A047"},{es:"Amarillo",en:"yellow",swatch:"#FDD835"},
+    {es:"Naranja",en:"orange",swatch:"#FB8C00"},{es:"Morado",en:"purple",swatch:"#8E24AA"},
+    {es:"Rosa",en:"pink",swatch:"#F06292"},{es:"Negro",en:"black",swatch:"#212121"},
+    {es:"Blanco",en:"white",swatch:"#F5F5F5",border:true},{es:"Gris",en:"gray",swatch:"#757575"},
+    {es:"Marrón",en:"brown",swatch:"#6D4C41"},{es:"Turquesa",en:"turquoise",swatch:"#00BCD4"},
+    {es:"Dorado",en:"golden",swatch:"#FFD600"},{es:"Plateado",en:"silver",swatch:"#B0BEC5"},
+    {es:"Celeste",en:"sky blue",swatch:"#81D4FA"},{es:"Violeta",en:"violet",swatch:"#7E57C2"},
+    {es:"Lima",en:"lime",swatch:"#AEEA00"},{es:"Coral",en:"coral",swatch:"#FF7043"},
+    {es:"Índigo",en:"indigo",swatch:"#3949AB"},{es:"Magenta",en:"magenta",swatch:"#D81B60"},
+    {es:"Cian",en:"cyan",swatch:"#00ACC1"},{es:"Salmón",en:"salmon",swatch:"#FF8A65"},
+    {es:"Esmeralda",en:"emerald",swatch:"#00C853"},{es:"Lavanda",en:"lavender",swatch:"#CE93D8"},
+    {es:"Terracota",en:"terracotta",swatch:"#BF5B3D"},{es:"Menta",en:"mint",swatch:"#A5D6A7"},
+    {es:"Granate",en:"maroon",swatch:"#880E4F"},{es:"Beige",en:"beige",swatch:"#F5DEB3"},
+    {es:"Carmesí",en:"crimson",swatch:"#B71C1C"},{es:"Oliva",en:"olive",swatch:"#827717"}
+  ]},
+  numeros:{label:"Números",icon:"🔢",color:"#2196C0",items:[
+    {es:"Uno",en:"one",numeral:"1"},{es:"Dos",en:"two",numeral:"2"},
+    {es:"Tres",en:"three",numeral:"3"},{es:"Cuatro",en:"four",numeral:"4"},
+    {es:"Cinco",en:"five",numeral:"5"},{es:"Seis",en:"six",numeral:"6"},
+    {es:"Siete",en:"seven",numeral:"7"},{es:"Ocho",en:"eight",numeral:"8"},
+    {es:"Nueve",en:"nine",numeral:"9"},{es:"Diez",en:"ten",numeral:"10"},
+    {es:"Once",en:"eleven",numeral:"11"},{es:"Doce",en:"twelve",numeral:"12"},
+    {es:"Trece",en:"thirteen",numeral:"13"},{es:"Catorce",en:"fourteen",numeral:"14"},
+    {es:"Quince",en:"fifteen",numeral:"15"},{es:"Dieciséis",en:"sixteen",numeral:"16"},
+    {es:"Diecisiete",en:"seventeen",numeral:"17"},{es:"Dieciocho",en:"eighteen",numeral:"18"},
+    {es:"Diecinueve",en:"nineteen",numeral:"19"},{es:"Veinte",en:"twenty",numeral:"20"},
+    {es:"Veintiuno",en:"twenty-one",numeral:"21"},{es:"Veintidós",en:"twenty-two",numeral:"22"},
+    {es:"Veintitrés",en:"twenty-three",numeral:"23"},{es:"Veinticuatro",en:"twenty-four",numeral:"24"},
+    {es:"Veinticinco",en:"twenty-five",numeral:"25"},{es:"Treinta",en:"thirty",numeral:"30"},
+    {es:"Cuarenta",en:"forty",numeral:"40"},{es:"Cincuenta",en:"fifty",numeral:"50"},
+    {es:"Sesenta",en:"sixty",numeral:"60"},{es:"Cero",en:"zero",numeral:"0"}
+  ]},
+  formas:{label:"Formas",icon:"🔷",color:"#FF8F00",items:[
+    {es:"Círculo",en:"circle",shape:"circle"},{es:"Cuadrado",en:"square",shape:"square"},
+    {es:"Triángulo",en:"triangle",shape:"triangle"},{es:"Rectángulo",en:"rectangle",shape:"rectangle"},
+    {es:"Estrella",en:"star",shape:"star"},{es:"Corazón",en:"heart",shape:"heart"},
+    {es:"Rombo",en:"diamond",shape:"diamond"},{es:"Óvalo",en:"oval",shape:"oval"},
+    {es:"Pentágono",en:"pentagon",shape:"pentagon"},{es:"Hexágono",en:"hexagon",shape:"hexagon"},
+    {es:"Octágono",en:"octagon",shape:"octagon"},{es:"Cruz",en:"cross",shape:"cross"},
+    {es:"Flecha",en:"arrow",shape:"arrow"},{es:"Luna",en:"moon",shape:"moon"},
+    {es:"Espiral",en:"spiral",shape:"spiral"},{es:"Trapecio",en:"trapezoid",shape:"trapezoid"},
+    {es:"Semicírculo",en:"semicircle",shape:"semicircle"},{es:"Cubo",en:"cube",shape:"cube"},
+    {es:"Esfera",en:"sphere",shape:"sphere"},{es:"Pirámide",en:"pyramid",shape:"pyramid"},
+    {es:"Cilindro",en:"cylinder",shape:"cylinder"},{es:"Cono",en:"cone",shape:"cone"},
+    {es:"Arco",en:"arc",shape:"arc"},{es:"Zigzag",en:"zigzag",shape:"zigzag"},
+    {es:"Ola",en:"wave",shape:"wave"},{es:"Nube",en:"cloud",shape:"cloud"},
+    {es:"Rayo",en:"lightning",shape:"lightning"},{es:"Anillo",en:"ring",shape:"ring"},
+    {es:"Panal",en:"honeycomb",shape:"honeycomb"},{es:"Espejo",en:"mirror shape",shape:"mirror"}
+  ]},
+  basicwords:{label:"Basic Words",icon:"💡",color:"#00897B",items:[
+    {es:"Movimiento",en:"movement",abstract:"movement"},
+    {es:"Silencio",en:"silence",abstract:"silence"},
+    {es:"Tiempo",en:"time",abstract:"time"},
+    {es:"Amor",en:"love",abstract:"love"},
+    {es:"Felicidad",en:"happiness",abstract:"happiness"},
+    {es:"Tristeza",en:"sadness",abstract:"sadness"},
+    {es:"Libertad",en:"freedom",abstract:"freedom"},
+    {es:"Fuerza",en:"strength",abstract:"strength"},
+    {es:"Paz",en:"peace",abstract:"peace"},
+    {es:"Sueño",en:"dream",abstract:"dream"},
+    {es:"Pensamiento",en:"thought",abstract:"thought"},
+    {es:"Memoria",en:"memory",abstract:"memory"},
+    {es:"Esperanza",en:"hope",abstract:"hope"},
+    {es:"Miedo",en:"fear",abstract:"fear"},
+    {es:"Alegría",en:"joy",abstract:"joy"},
+    {es:"Curiosidad",en:"curiosity",abstract:"curiosity"},
+    {es:"Valentía",en:"courage",abstract:"courage"},
+    {es:"Amistad",en:"friendship",abstract:"friendship"},
+    {es:"Familia",en:"family",abstract:"family"},
+    {es:"Naturaleza",en:"nature",abstract:"nature"},
+    {es:"Música",en:"music",abstract:"music"},
+    {es:"Creatividad",en:"creativity",abstract:"creativity"},
+    {es:"Imaginación",en:"imagination",abstract:"imagination"},
+    {es:"Aprendizaje",en:"learning",abstract:"learning"},
+    {es:"Cambio",en:"change",abstract:"change"}
+  ]},
+  transporte:{label:"Transporte",icon:"🚗",color:"#E53935",items:[
+    {es:"Carro",en:"car",wiki:"Car"},{es:"Autobús",en:"bus",wiki:"Bus"},
+    {es:"Tren",en:"train",wiki:"Train"},{es:"Avión",en:"airplane",wiki:"Airplane"},
+    {es:"Barco",en:"ship",wiki:"Ship"},{es:"Bicicleta",en:"bicycle",wiki:"Bicycle"},
+    {es:"Motocicleta",en:"motorcycle",wiki:"Motorcycle"},{es:"Helicóptero",en:"helicopter",wiki:"Helicopter"},
+    {es:"Submarino",en:"submarine",wiki:"Submarine"},{es:"Cohete",en:"rocket",wiki:"Rocket"},
+    {es:"Taxi",en:"taxi",wiki:"Taxi"},{es:"Camión",en:"truck",wiki:"Truck"},
+    {es:"Tractor",en:"tractor",wiki:"Tractor"},{es:"Ambulancia",en:"ambulance",wiki:"Ambulance"},
+    {es:"Camión de bomberos",en:"fire truck",wiki:"Fire_engine"},{es:"Tranvía",en:"tram",wiki:"Tram"},
+    {es:"Ferry",en:"ferry",wiki:"Ferry"},{es:"Velero",en:"sailboat",wiki:"Sailboat"},
+    {es:"Kayak",en:"kayak",wiki:"Kayak"},{es:"Paracaídas",en:"parachute",wiki:"Parachute"},
+    {es:"Globo aerostático",en:"hot air balloon",wiki:"Hot_air_balloon"},
+    {es:"Teleférico",en:"cable car",wiki:"Cable_car_(railway)"},
+    {es:"Patineta",en:"skateboard",wiki:"Skateboard"},{es:"Monopatín",en:"scooter",wiki:"Kick_scooter"},
+    {es:"Trineo",en:"sled",wiki:"Sled"},{es:"Canoa",en:"canoe",wiki:"Canoe"},
+    {es:"Metro",en:"subway",wiki:"Rapid_transit"},{es:"Zeppelin",en:"zeppelin",wiki:"Zeppelin"},
+    {es:"Grúa",en:"crane",wiki:"Crane_(machine)"},{es:"Excavadora",en:"excavator",wiki:"Excavator"},
+    {es:"Furgoneta",en:"van",wiki:"Van"},{es:"Limusina",en:"limousine",wiki:"Limousine"},
+    {es:"Quad",en:"ATV",wiki:"All-terrain_vehicle"},
+    {es:"Segway",en:"segway",wiki:"Segway"},
+    {es:"Montacargas",en:"forklift",wiki:"Forklift_truck"},
+    {es:"Remolque",en:"trailer",wiki:"Trailer_(vehicle)"},
+    {es:"Jet ski",en:"jet ski",wiki:"Personal_watercraft"},
+    {es:"Lancha",en:"motorboat",wiki:"Motorboat"},
+    {es:"Crucero",en:"cruise ship",wiki:"Cruise_ship"},
+    {es:"Portaaviones",en:"aircraft carrier",wiki:"Aircraft_carrier"},
+    {es:"Batiscafo",en:"bathyscaphe",wiki:"Bathyscaphe"},
+    {es:"Góndola",en:"gondola",wiki:"Gondola"},
+    {es:"Riksha",en:"rickshaw",wiki:"Rickshaw"},
+    {es:"Monorraíl",en:"monorail",wiki:"Monorail"},
+    {es:"Transbordador",en:"space shuttle",wiki:"Space_Shuttle"},
+    {es:"Helióptero",en:"gyrocopter",wiki:"Autogyro"},
+    {es:"Dron",en:"drone",wiki:"Unmanned_aerial_vehicle"},
+    {es:"Parapente",en:"paraglider",wiki:"Paragliding"}
+  ]}
+};
+
+const ANIM_MAP={
+  Loro:"fly",Mariposa:"fly",Águila:"fly",Colibrí:"fly",Pato:"fly",Pingüino:"wiggle",
+  Abeja:"fly",Murciélago:"fly",Flamenco:"wiggle",Búho:"wiggle",
+  Pelota:"bounce",Conejo:"bounce",Canguro:"bounce",Rana:"bounce",Perro:"bounce",
+  Gato:"wiggle",Zorro:"wiggle",Tigre:"wiggle",León:"wiggle",Lobo:"wiggle",
+  Delfín:"swim",Tiburón:"swim",Ballena:"swim",Pulpo:"swim",
+  Bicicleta:"spin",Carro:"swim",Tren:"swim",Avión:"fly",Cohete:"fly",
+  Helicóptero:"fly",Patineta:"swim",Globo:"fly",Paraguas:"grow",
+  Estrella:"spin",Corazón:"pulse",Espiral:"spin",Rayo:"shake",
+  Manzana:"bounce",Uva:"bounce",Fresa:"bounce",
+  Elefante:"shake",Hipopótamo:"shake",Gorila:"shake",Oso:"shake",
+  Serpiente:"swim",Cocodrilo:"swim",Tortuga:"swim",
+  Zanahoria:"wiggle",Tomate:"bounce",Papa:"bounce",Brócoli:"grow",
+  Maíz:"wiggle",Calabaza:"bounce",Champiñón:"grow",Ajo:"shake",
+  Piloto:"fly",Astronauta:"fly",Bombero:"shake",Músico:"wiggle",
+  Bailarín:"wiggle",Granjero:"bounce",Chef:"wiggle",Doctor:"grow",
+};
+function getAnim(w){return ANIM_MAP[w]||'bounce';}
+
+const FALLBACKS={
+  Silla:"🪑",Mesa:"🪵",Cama:"🛏️",Puerta:"🚪",Ventana:"🪟",Libro:"📚",Lápiz:"✏️",
+  Zapato:"👟",Sombrero:"🎩",Reloj:"⏰",Mochila:"🎒",Taza:"☕",Cuchara:"🥄",
+  Pelota:"⚽",Tijeras:"✂️",Teléfono:"📱",Lámpara:"💡",Espejo:"🪞",Llave:"🗝️",
+  Botella:"🍶",Globo:"🎈",Paraguas:"☂️",Vela:"🕯️",Guitarra:"🎸",Bicicleta:"🚲",
+  Avión:"✈️",Tren:"🚂",Barco:"🚢",Cepillo:"🖌️",Carro:"🚗",
+  Perro:"🐶",Gato:"🐱",Elefante:"🐘",León:"🦁",Tigre:"🐯",Jirafa:"🦒",
+  Cebra:"🦓",Pingüino:"🐧",Delfín:"🐬",Águila:"🦅",Oso:"🐻",Lobo:"🐺",
+  Zorro:"🦊",Conejo:"🐰",Tortuga:"🐢",Cocodrilo:"🐊",Mariposa:"🦋",Abeja:"🐝",
+  Pulpo:"🐙",Tiburón:"🦈",Caballo:"🐴",Vaca:"🐄",Cerdo:"🐷",Pato:"🦆",
+  Gallina:"🐔",Camello:"🐪",Hipopótamo:"🦛",Loro:"🦜",Panda:"🐼",Koala:"🐨",
+  Canguro:"🦘",Rana:"🐸",Serpiente:"🐍",Murciélago:"🦇",Búho:"🦉",Cangrejo:"🦀",
+  Ballena:"🐳",Gorila:"🦍",Flamenco:"🦩",Colibrí:"🐦",
+  Leopardo:"🐆",Rinoceronte:"🦏",Ciervo:"🦌",Nutria:"🦦",
+  Coyote:"🐺",Mapache:"🦝",Castor:"🦫",Reno:"🦌",
+  Bisonte:"🐃",Yak:"🐂",Lince:"🐱",Jaguar:"🐆",
+  Tapir:"🦏",Armadillo:"🦔",Perezoso:"🦥",Capibara:"🐹",
+  Guepardo:"🐆",Mandril:"🐒",
+  Ojo:"👁️",Nariz:"👃",Boca:"👄",Oreja:"👂",Mano:"✋",Pie:"🦶",Brazo:"💪",
+  Pierna:"🦵",Cabeza:"🗣️",Diente:"🦷",Cabello:"💇",Rodilla:"🦵",Codo:"💪",
+  Hombro:"🤷",Dedo:"☝️",Uña:"💅",Espalda:"🧍",Cuello:"🦒",Mejilla:"😊",Frente:"😮",
+  Manzana:"🍎",Plátano:"🍌",Naranja:"🍊",Fresa:"🍓",Uva:"🍇",Sandía:"🍉",
+  Piña:"🍍",Mango:"🥭",Pera:"🍐",Limón:"🍋",Cereza:"🍒",Kiwi:"🥝",
+  Coco:"🥥",Durazno:"🍑",Papaya:"🥭",
+  Guayaba:"🍈",Maracuyá:"🍊",Melón:"🍈",Ciruela:"🫐",Higo:"🫐",
+  Granada:"🍎",Mandarina:"🍊",Frambuesa:"🍒",Arándano:"🫐",
+  Mora:"🍇",Nectarina:"🍑",Albaricoque:"🍑",Tamarindo:"🟤",
+  Carambola:"⭐",Lichee:"🍈",Mamey:"🟠",Pitaya:"🐉",
+  Tuna:"🌵",Zapote:"🟤",Jicama:"⚪",Toronja:"🍊",Noni:"🟢",
+  Zanahoria:"🥕",
+  Nabo:"⚪",Remolacha:"🟢",Alcachofa:"🌿",Espárrago:"🌱",
+  Puerro:"🧅",Eneldo:"🌿",Cilantro:"🌿",Perejil:"🌿",
+  Romero:"🌿",Albahaca:"🌿",Jengibre:"🫚",Aguacate:"🥑",
+  Nopal:"🌵",Chayote:"🟢",Jícama:"⚪",Tomatillo:"🍅",
+  Chile:"🌶️","Hierba buena":"🌿",Tomate:"🍅",Papa:"🥔",Lechuga:"🥬",Cebolla:"🧅",Brócoli:"🥦",
+  Maíz:"🌽",Pepino:"🥒",Espinaca:"🥬",Coliflor:"🥦",Calabaza:"🎃",Berenjena:"🍆",
+  Rábano:"🌱",Apio:"🥗",Pimiento:"🫑",Ajo:"🧄",Ejote:"🫘",Chícharo:"🟢",
+  Betabel:"🫀",Champiñón:"🍄",
+  Camisa:"👔",
+  Overol:"👷",Impermeable:"🧥",Chaleco:"🦺",Leggings:"👖",
+  Bermudas:"🩲",Camisón:"👗",Bata:"🥼",Sombrero:"🎩",
+  Gorra:"🧢",Pañuelo:"🤧",Mochila:"🎒",Bolso:"👜",
+  Cartera:"👛",Lentes:"👓",Aretes:"💎",Collar:"📿",Pulsera:"⌚",Pantalón:"👖",Vestido:"👗",Zapatos:"👟",Calcetín:"🧦",Bufanda:"🧣",
+  Gorro:"🎩",Abrigo:"🧥",Chaqueta:"🧥",Falda:"👗",Suéter:"🧶",Pijama:"😴",
+  Cinturón:"🪢",Guante:"🧤",Corbata:"👔",Botas:"👢",Sandalias:"👡",
+  Camiseta:"👕",Uniforme:"🎽",Traje:"🤵",
+  Doctor:"🩺",
+  Panadero:"🥖",Mecánico:"🔧",Arquitecto:"🏛️",Abogado:"⚖️",
+  Contador:"🧮",Enfermero:"💉",Fotógrafo:"📷",Periodista:"📰",
+  Cocinero:"🍳",Jardinero:"🌱",Pescador:"🎣",Electricista:"⚡",
+  Fontanero:"🔧",Taxista:"🚕","Guía turístico":"🗺️",
+  Árbitro:"🟨",Bibliotecario:"📚",Traductor:"🌐",Maestro:"📚",Chef:"👨‍🍳",Bombero:"🚒",Piloto:"✈️",Policía:"👮",
+  Dentista:"🦷",Ingeniero:"⚙️",Veterinario:"🐾",Astronauta:"🚀",Músico:"🎵",
+  Pintor:"🎨",Carpintero:"🪚",Granjero:"🌾",Nadador:"🏊",Futbolista:"⚽",
+  Bailarín:"💃",Actor:"🎭",Escritor:"✍️",Científico:"🔬",
+  Mesa:"🪵",Silla:"🪑",Cama:"🛏️",Puerta:"🚪",Ventana:"🪟",Lámpara:"💡",
+  Alfombra:"🪣",Cortina:"🪟",Cojín:"🛋️",Escalera:"🪜",Reloj:"⏰",Cuadro:"🖼️",
+  Plato:"🍽️",Tenedor:"🍴",Cuchillo:"🔪",Olla:"🫕",Sartén:"🍳",Nevera:"🧊",
+  Horno:"🔥",Lavadora:"🧺",Televisor:"📺",Computadora:"💻",Teclado:"⌨️",
+  Ratón:"🖱️",Impresora:"🖨️",Cámara:"📷",Audífonos:"🎧",Calculadora:"🧮",
+  Autobús:"🚌",Motocicleta:"🏍️",Helicóptero:"🚁",Submarino:"🚤",Cohete:"🚀",
+  Taxi:"🚕",Camión:"🚚",Tractor:"🚜",Ambulancia:"🚑","Camión de bomberos":"🚒",
+  Tranvía:"🚋",Ferry:"⛴️",Velero:"⛵",Kayak:"🚣",Paracaídas:"🪂",
+  "Globo aerostático":"🎈",Teleférico:"🚡",Patineta:"🛹",Monopatín:"🛴",
+  Trineo:"🛷",Canoa:"🚣",Metro:"🚇",Zeppelin:"🛸",Grúa:"🏗️",Excavadora:"🚧"
+};
+
+const SYLLS={
+  Silla:["Si","lla"],Mesa:["Me","sa"],Cama:["Ca","ma"],Puerta:["Puer","ta"],
+  Ventana:["Ven","ta","na"],Libro:["Li","bro"],Lápiz:["Lá","piz"],Zapato:["Za","pa","to"],
+  Sombrero:["Som","bre","ro"],Reloj:["Re","loj"],Mochila:["Mo","chi","la"],Taza:["Ta","za"],
+  Cuchara:["Cu","cha","ra"],Pelota:["Pe","lo","ta"],Tijeras:["Ti","je","ras"],
+  Teléfono:["Te","lé","fo","no"],Lámpara:["Lám","pa","ra"],Espejo:["Es","pe","jo"],
+  Llave:["Lla","ve"],Botella:["Bo","te","lla"],Globo:["Glo","bo"],Paraguas:["Pa","ra","guas"],
+  Vela:["Ve","la"],Guitarra:["Gui","ta","rra"],Bicicleta:["Bi","ci","cle","ta"],
+  Avión:["A","vión"],Tren:["Tren"],Barco:["Bar","co"],Cepillo:["Ce","pi","llo"],Carro:["Ca","rro"],
+  Perro:["Pe","rro"],Gato:["Ga","to"],Elefante:["E","le","fan","te"],León:["León"],
+  Tigre:["Ti","gre"],Jirafa:["Ji","ra","fa"],Cebra:["Ce","bra"],Pingüino:["Pin","güi","no"],
+  Delfín:["Del","fín"],Águila:["Á","gui","la"],Oso:["O","so"],Lobo:["Lo","bo"],
+  Zorro:["Zo","rro"],Conejo:["Co","ne","jo"],Tortuga:["Tor","tu","ga"],
+  Cocodrilo:["Co","co","dri","lo"],Mariposa:["Ma","ri","po","sa"],Abeja:["A","be","ja"],
+  Pulpo:["Pul","po"],Tiburón:["Ti","bu","rón"],Caballo:["Ca","ba","llo"],
+  Vaca:["Va","ca"],Cerdo:["Cer","do"],Pato:["Pa","to"],Gallina:["Ga","lli","na"],
+  Camello:["Ca","me","llo"],Hipopótamo:["Hi","po","pó","ta","mo"],Loro:["Lo","ro"],
+  Panda:["Pan","da"],Koala:["Ko","a","la"],Canguro:["Can","gu","ro"],Rana:["Ra","na"],
+  Serpiente:["Ser","pien","te"],Murciélago:["Mur","cié","la","go"],Búho:["Bú","ho"],
+  Cangrejo:["Can","gre","jo"],Ballena:["Ba","lle","na"],Gorila:["Go","ri","la"],
+  Flamenco:["Fla","men","co"],Colibrí:["Co","li","brí"],
+  Ojo:["O","jo"],Nariz:["Na","riz"],Boca:["Bo","ca"],Oreja:["O","re","ja"],
+  Mano:["Ma","no"],Pie:["Pie"],Brazo:["Bra","zo"],Pierna:["Pier","na"],
+  Cabeza:["Ca","be","za"],Diente:["Dien","te"],Cabello:["Ca","be","llo"],
+  Rodilla:["Ro","di","lla"],Codo:["Co","do"],Hombro:["Hom","bro"],Dedo:["De","do"],
+  Espalda:["Es","pal","da"],Cuello:["Cue","llo"],Mejilla:["Me","ji","lla"],Frente:["Fren","te"],
+  Manzana:["Man","za","na"],Plátano:["Plá","ta","no"],Naranja:["Na","ran","ja"],
+  Fresa:["Fre","sa"],Uva:["U","va"],Sandía:["San","dí","a"],Piña:["Pi","ña"],
+  Mango:["Man","go"],Pera:["Pe","ra"],Limón:["Li","món"],Cereza:["Ce","re","za"],
+  Kiwi:["Ki","wi"],Coco:["Co","co"],Durazno:["Du","raz","no"],Papaya:["Pa","pa","ya"],
+  // Verduras (NUEVAS)
+  Zanahoria:["Za","na","ho","ria"],Tomate:["To","ma","te"],Papa:["Pa","pa"],
+  Lechuga:["Le","chu","ga"],Cebolla:["Ce","bo","lla"],Brócoli:["Bró","co","li"],
+  Maíz:["Ma","íz"],Pepino:["Pe","pi","no"],Espinaca:["Es","pi","na","ca"],
+  Coliflor:["Co","li","flor"],Calabaza:["Ca","la","ba","za"],Berenjena:["Be","ren","je","na"],
+  Rábano:["Rá","ba","no"],Apio:["A","pio"],Pimiento:["Pi","mien","to"],Ajo:["Ajo"],
+  Ejote:["E","jo","te"],Chícharo:["Chí","cha","ro"],Betabel:["Be","ta","bel"],
+  Champiñón:["Cham","pi","ñón"],
+  // Ropa (NUEVAS)
+  Camisa:["Ca","mi","sa"],Pantalón:["Pan","ta","lón"],Vestido:["Ves","ti","do"],
+  Zapatos:["Za","pa","tos"],Calcetín:["Cal","ce","tín"],Bufanda:["Bu","fan","da"],
+  Gorro:["Go","rro"],Abrigo:["A","bri","go"],Chaqueta:["Cha","que","ta"],
+  Falda:["Fal","da"],Suéter:["Sué","ter"],Pijama:["Pi","ja","ma"],
+  Cinturón:["Cin","tu","rón"],Guante:["Guan","te"],Corbata:["Cor","ba","ta"],
+  Botas:["Bo","tas"],Sandalias:["San","da","lias"],Camiseta:["Ca","mi","se","ta"],
+  Uniforme:["U","ni","for","me"],Traje:["Tra","je"],
+  // Profesiones (NUEVAS)
+  Doctor:["Doc","tor"],Maestro:["Maes","tro"],Chef:["Chef"],
+  Bombero:["Bom","be","ro"],Piloto:["Pi","lo","to"],Policía:["Po","li","cí","a"],
+  Dentista:["Den","tis","ta"],Ingeniero:["In","ge","nie","ro"],
+  Veterinario:["Ve","te","ri","na","rio"],Astronauta:["As","tro","nau","ta"],
+  Músico:["Mú","si","co"],Pintor:["Pin","tor"],Carpintero:["Car","pin","te","ro"],
+  Granjero:["Gran","je","ro"],Nadador:["Na","da","dor"],Futbolista:["Fut","bo","lis","ta"],
+  Bailarín:["Bai","la","rín"],Actor:["Ac","tor"],Escritor:["Es","cri","tor"],
+  Científico:["Cien","tí","fi","co"],
+  // BUG FIX: palabras que genuinamente faltaban
+  Rojo:["Ro","jo"],Uña:["U","ña"],Zeppelin:["Ze","ppe","lin"],
+  Azul:["A","zul"],Verde:["Ver","de"],Amarillo:["A","ma","ri","llo"],
+  Cruz:["Cruz"],Ola:["O","la"],
+  "Globo aerostático":["Glo","bo","ae","ros","tá","ti","co"],
+  // Colores
+  Morado:["Mo","ra","do"],Rosa:["Ro","sa"],Negro:["Ne","gro"],Blanco:["Blan","co"],
+  Gris:["Gris"],Marrón:["Ma","rrón"],Turquesa:["Tur","que","sa"],
+  Dorado:["Do","ra","do"],Plateado:["Pla","tea","do"],Celeste:["Ce","les","te"],
+  Violeta:["Vio","le","ta"],Lima:["Li","ma"],Coral:["Co","ral"],
+  Índigo:["Ín","di","go"],Magenta:["Ma","gen","ta"],Cian:["Cian"],
+  Salmón:["Sal","món"],Esmeralda:["Es","me","ral","da"],Lavanda:["La","van","da"],
+  Terracota:["Te","rra","co","ta"],Menta:["Men","ta"],Granate:["Gra","na","te"],
+  Beige:["Bei","ge"],Carmesí:["Car","me","sí"],Oliva:["O","li","va"],
+  // BUG FIX #5: sílabas faltantes de números
+  Uno:["U","no"],Dos:["Dos"],Tres:["Tres"],Cuatro:["Cua","tro"],Cinco:["Cin","co"],
+  Seis:["Seis"],Siete:["Sie","te"],Ocho:["O","cho"],Nueve:["Nue","ve"],Diez:["Diez"],
+  Once:["On","ce"],Doce:["Do","ce"],Trece:["Tre","ce"],Catorce:["Ca","tor","ce"],
+  Quince:["Quin","ce"],Veinte:["Vein","te"],Treinta:["Trein","ta"],
+  Cuarenta:["Cua","ren","ta"],Cincuenta:["Cin","cuen","ta"],Cien:["Cien"],
+  Cero:["Ce","ro"],Mil:["Mil"],Primero:["Pri","me","ro"],Segundo:["Se","gun","do"],
+  Tercero:["Ter","ce","ro"],Mitad:["Mi","tad"],Doble:["Do","ble"],
+  Triple:["Tri","ple"],Par:["Par"],Impar:["Im","par"],
+  // Formas
+  Círculo:["Cír","cu","lo"],Cuadrado:["Cua","dra","do"],Triángulo:["Trián","gu","lo"],
+  Rectángulo:["Rec","tán","gu","lo"],Estrella:["Es","tre","lla"],Corazón:["Co","ra","zón"],
+  Rombo:["Rom","bo"],Óvalo:["Ó","va","lo"],Pentágono:["Pen","tá","go","no"],
+  Hexágono:["He","xá","go","no"],Octágono:["Oc","tá","go","no"],Flecha:["Fle","cha"],
+  Luna:["Lu","na"],Espiral:["Es","pi","ral"],Trapecio:["Tra","pe","cio"],
+  Semicírculo:["Se","mi","cír","cu","lo"],Cubo:["Cu","bo"],Esfera:["Es","fe","ra"],
+  Pirámide:["Pi","rá","mi","de"],Cilindro:["Ci","lin","dro"],Cono:["Co","no"],
+  Arco:["Ar","co"],Zigzag:["Zig","zag"],Nube:["Nu","be"],Rayo:["Ra","yo"],
+  Anillo:["A","ni","llo"],Panal:["Pa","nal"],
+  // Transporte
+  Autobús:["Au","to","bús"],Motocicleta:["Mo","to","ci","cle","ta"],
+  Helicóptero:["He","li","cóp","te","ro"],Submarino:["Sub","ma","ri","no"],
+  Cohete:["Co","he","te"],Taxi:["Ta","xi"],Camión:["Ca","mión"],
+  Tractor:["Trac","tor"],Ambulancia:["Am","bu","lan","cia"],
+  "Camión de bomberos":["Ca","mión","de","bom","be","ros"],
+  Tranvía:["Tran","ví","a"],Ferry:["Fe","rry"],Velero:["Ve","le","ro"],
+  Kayak:["Ka","yak"],Paracaídas:["Pa","ra","caí","das"],
+  Teleférico:["Te","le","fé","ri","co"],Patineta:["Pa","ti","ne","ta"],
+  Monopatín:["Mo","no","pa","tín"],Trineo:["Tri","neo"],Canoa:["Ca","no","a"],
+  Metro:["Me","tro"],Grúa:["Grú","a"],Excavadora:["Ex","ca","va","do","ra"],
+  // Animales nuevos
+  Leopardo:["Le","o","par","do"],Rinoceronte:["Ri","no","ce","ron","te"],
+  Ciervo:["Cier","vo"],Nutria:["Nu","tria"],Coyote:["Co","yo","te"],
+  Mapache:["Ma","pa","che"],Castor:["Cas","tor"],Reno:["Re","no"],
+  Bisonte:["Bi","son","te"],Lince:["Lin","ce"],Jaguar:["Ja","guar"],
+  Tapir:["Ta","pir"],Armadillo:["Ar","ma","di","llo"],
+  Perezoso:["Pe","re","zo","so"],Capibara:["Ca","pi","ba","ra"],
+  Guepardo:["Gue","par","do"],Mandril:["Man","dril"],
+  // Cosas nuevas
+  Alfombra:["Al","fom","bra"],Cortina:["Cor","ti","na"],
+  Cojín:["Co","jín"],Escalera:["Es","ca","le","ra"],Cuadro:["Cua","dro"],
+  Plato:["Pla","to"],Tenedor:["Te","ne","dor"],Cuchillo:["Cu","chi","llo"],
+  Sartén:["Sar","tén"],Nevera:["Ne","ve","ra"],Horno:["Hor","no"],
+  Lavadora:["La","va","do","ra"],Televisor:["Te","le","vi","sor"],
+  Computadora:["Com","pu","ta","do","ra"],Teclado:["Te","cla","do"],
+  Impresora:["Im","pre","so","ra"],Audífonos:["Au","dí","fo","nos"],
+  Calculadora:["Cal","cu","la","do","ra"],
+  // Cuerpo nuevas
+  Ceja:["Ce","ja"],Labios:["La","bios"],Lengua:["Len","gua"],
+  Garganta:["Gar","gan","ta"],Pecho:["Pe","cho"],Estómago:["Es","tó","ma","go"],
+  Cadera:["Ca","de","ra"],Tobillo:["To","bi","llo"],Talón:["Ta","lón"],
+  Pulgar:["Pul","gar"],Muñeca:["Mu","ñe","ca"],Pantorrilla:["Pan","to","rri","lla"],
+  Muslo:["Mus","lo"],Barbilla:["Bar","bi","lla"],Pómulo:["Pó","mu","lo"],
+  Sien:["Sien"],Nuca:["Nu","ca"],Ombligo:["Om","bli","go"],
+  // Frutas nuevas
+  Guayaba:["Gua","ya","ba"],Maracuyá:["Ma","ra","cu","yá"],Melón:["Me","lón"],
+  Ciruela:["Ci","rue","la"],Granada:["Gra","na","da"],Mandarina:["Man","da","ri","na"],
+  Frambuesa:["Fram","bue","sa"],Arándano:["A","rán","da","no"],
+  Nectarina:["Nec","ta","ri","na"],Albaricoque:["Al","ba","ri","co","que"],
+  Tamarindo:["Ta","ma","rin","do"],Carambola:["Ca","ram","bo","la"],
+  Pitaya:["Pi","ta","ya"],Toronja:["To","ron","ja"],
+  // Verduras nuevas
+  Alcachofa:["Al","ca","cho","fa"],Espárrago:["Es","pá","rra","go"],
+  Puerro:["Pue","rro"],Eneldo:["E","nel","do"],Cilantro:["Ci","lan","tro"],
+  Perejil:["Pe","re","jil"],Romero:["Ro","me","ro"],Albahaca:["Al","ba","ha","ca"],
+  Jengibre:["Jen","gi","bre"],Aguacate:["A","gua","ca","te"],
+  Nopal:["No","pal"],Chayote:["Cha","yo","te"],Tomatillo:["To","ma","ti","llo"],
+  Chile:["Chi","le"],
+  // Ropa nueva
+  Overol:["O","ve","rol"],Impermeable:["Im","per","mea","ble"],
+  Chaleco:["Cha","le","co"],Leggings:["Leg","gings"],Bermudas:["Ber","mu","das"],
+  Camisón:["Ca","mi","són"],Pañuelo:["Pa","ñue","lo"],Bolso:["Bol","so"],
+  Cartera:["Car","te","ra"],Lentes:["Len","tes"],Aretes:["A","re","tes"],
+  Collar:["Co","llar"],Pulsera:["Pul","se","ra"],
+  // Profesiones nuevas
+  Panadero:["Pa","na","de","ro"],Mecánico:["Me","cá","ni","co"],
+  Arquitecto:["Ar","qui","tec","to"],Abogado:["A","bo","ga","do"],
+  Contador:["Con","ta","dor"],Enfermero:["En","fer","me","ro"],
+  Fotógrafo:["Fo","tó","gra","fo"],Periodista:["Pe","rio","dis","ta"],
+  Cocinero:["Co","ci","ne","ro"],Jardinero:["Jar","di","ne","ro"],
+  Pescador:["Pes","ca","dor"],Electricista:["E","lec","tri","cis","ta"],
+  Fontanero:["Fon","ta","ne","ro"],Taxista:["Ta","xis","ta"],
+  Árbitro:["Ár","bi","tro"],Bibliotecario:["Bi","blio","te","ca","rio"],
+  Traductor:["Tra","duc","tor"],
+  // Transporte nuevo
+  Furgoneta:["Fur","go","ne","ta"],Limusina:["Li","mu","si","na"],
+  Montacargas:["Mon","ta","car","gas"],Remolque:["Re","mol","que"],
+  Lancha:["Lan","cha"],Crucero:["Cru","ce","ro"],Portaaviones:["Por","ta","a","vio","nes"],
+  Batiscafo:["Ba","tis","ca","fo"],Góndola:["Gón","do","la"],
+  Riksha:["Rik","sha"],Monorraíl:["Mo","no","rra","íl"],
+  Transbordador:["Trans","bor","da","dor"],Dron:["Dron"],Parapente:["Pa","ra","pen","te"]
+};
+
+// ── SVG FORMAS ─────────────────────────────────────────────────────────────────
+function drawShape(shape,color){
+  const c=color||'#FF8F00';
+  const shapes={
+    circle:`<ellipse cx="110" cy="110" rx="82" ry="82" fill="${c}" opacity="0.85"/>`,
+    square:`<rect x="28" y="28" width="164" height="164" rx="12" fill="${c}" opacity="0.85"/>`,
+    triangle:`<polygon points="110,18 202,192 18,192" fill="${c}" opacity="0.85"/>`,
+    rectangle:`<rect x="12" y="55" width="196" height="110" rx="10" fill="${c}" opacity="0.85"/>`,
+    star:`<polygon points="110,12 132,80 202,80 147,122 167,192 110,152 53,192 73,122 18,80 88,80" fill="${c}" opacity="0.85"/>`,
+    heart:`<path d="M110,178C58,130 18,98 18,62C18,38 38,18 62,18C82,18 98,32 110,48C122,32 138,18 158,18C182,18 202,38 202,62C202,98 162,130 110,178Z" fill="${c}" opacity="0.85"/>`,
+    diamond:`<polygon points="110,8 204,110 110,212 16,110" fill="${c}" opacity="0.85"/>`,
+    oval:`<ellipse cx="110" cy="110" rx="92" ry="56" fill="${c}" opacity="0.85"/>`,
+    pentagon:`<polygon points="110,14 202,78 168,192 52,192 18,78" fill="${c}" opacity="0.85"/>`,
+    hexagon:`<polygon points="110,8 192,54 192,146 110,192 28,146 28,54" fill="${c}" opacity="0.85"/>`,
+    octagon:`<polygon points="68,8 152,8 202,58 202,152 152,202 68,202 18,152 18,58" fill="${c}" opacity="0.85"/>`,
+    cross:`<path d="M78,8H142V78H212V142H142V212H78V142H8V78H78Z" fill="${c}" opacity="0.85"/>`,
+    arrow:`<polygon points="110,8 202,100 152,100 152,202 68,202 68,100 18,100" fill="${c}" opacity="0.85"/>`,
+    moon:`<path d="M110,18A82,82 0 1,0 110,202A52,52 0 1,1 110,18Z" fill="${c}" opacity="0.85"/>`,
+    spiral:`<path d="M110,110 m0,-62 a62,62 0 1,1 -1,0 m1,62 a46,46 0 1,0 1,0 m-1,-46 a30,30 0 1,1 -1,0" fill="none" stroke="${c}" stroke-width="14" opacity="0.85"/>`,
+    trapezoid:`<polygon points="38,172 182,172 202,48 18,48" fill="${c}" opacity="0.85"/>`,
+    semicircle:`<path d="M18,110A92,92 0 0,1 202,110Z" fill="${c}" opacity="0.85"/>`,
+    cube:`<polygon points="110,18 192,64 192,156 110,202 28,156 28,64" fill="${c}" opacity="0.68"/><polygon points="110,18 192,64 110,110 28,64" fill="${c}" opacity="0.9"/><polygon points="192,64 192,156 110,202 110,110" fill="${c}" opacity="0.56"/>`,
+    sphere:`<ellipse cx="110" cy="110" rx="87" ry="87" fill="${c}" opacity="0.85"/>`,
+    pyramid:`<polygon points="110,12 196,192 24,192" fill="${c}" opacity="0.8"/><polygon points="110,12 196,192 110,142" fill="${c}" opacity="0.58"/>`,
+    cylinder:`<ellipse cx="110" cy="54" rx="76" ry="26" fill="${c}" opacity="0.9"/><rect x="34" y="54" width="152" height="120" fill="${c}" opacity="0.74"/><ellipse cx="110" cy="174" rx="76" ry="26" fill="${c}" opacity="0.85"/>`,
+    cone:`<polygon points="110,12 196,192 24,192" fill="${c}" opacity="0.85"/><ellipse cx="110" cy="192" rx="86" ry="23" fill="${c}" opacity="0.68"/>`,
+    arc:`<path d="M24,172 A96,96 0 0,1 196,172" fill="none" stroke="${c}" stroke-width="22" stroke-linecap="round" opacity="0.85"/>`,
+    zigzag:`<polyline points="12,68 52,152 92,68 132,152 172,68 212,152" fill="none" stroke="${c}" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>`,
+    wave:`<path d="M12,110 C44,58 76,162 110,110 C144,58 176,162 208,110" fill="none" stroke="${c}" stroke-width="18" stroke-linecap="round" opacity="0.85"/>`,
+    cloud:`<ellipse cx="78" cy="132" rx="56" ry="46" fill="${c}" opacity="0.85"/><ellipse cx="142" cy="132" rx="56" ry="46" fill="${c}" opacity="0.85"/><ellipse cx="110" cy="98" rx="56" ry="52" fill="${c}" opacity="0.85"/>`,
+    lightning:`<polygon points="132,8 78,112 116,112 88,212 162,88 122,88 148,8" fill="${c}" opacity="0.85"/>`,
+    ring:`<circle cx="110" cy="110" r="82" fill="none" stroke="${c}" stroke-width="30" opacity="0.85"/>`,
+    honeycomb:`<polygon points="78,18 142,18 172,74 142,130 78,130 48,74" fill="${c}" opacity="0.6"/><polygon points="142,18 206,18 224,74 206,130 142,130 120,74" fill="${c}" opacity="0.4"/><polygon points="78,130 142,130 172,186 142,220 78,220 48,186" fill="${c}" opacity="0.5"/>`,
+    mirror:`<rect x="53" y="18" width="104" height="184" rx="52" fill="${c}" opacity="0.85"/>`
+  };
+  return `<svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;padding:18px">${shapes[shape]||shapes.circle}</svg>`;
+}
+
+
+// ── B: BASIC WORDS — SVG GENERATIVOS ──────────────────────────────────────
+function drawAbstract(concept, color){
+  const c = color || '#00897B';
+  const W=220, H=220;
+  
+  const designs = {
+    movement: `
+      <g><path d="M30,110 Q80,60 110,110 Q140,160 190,110" fill="none" stroke="${c}" stroke-width="5" stroke-linecap="round" opacity="0.9"/>
+      <path d="M30,130 Q80,80 110,130 Q140,180 190,130" fill="none" stroke="${c}" stroke-width="3" stroke-linecap="round" opacity="0.5"/>
+      <circle cx="190" cy="110" r="10" fill="${c}"/>
+      <path d="M175,95 L195,110 L175,125" fill="${c}"/></g>`,
+    
+    silence: `
+      <g><circle cx="110" cy="110" r="70" fill="${c}" opacity="0.08"/>
+      <circle cx="110" cy="110" r="50" fill="${c}" opacity="0.12"/>
+      <circle cx="110" cy="110" r="30" fill="${c}" opacity="0.2"/>
+      <circle cx="110" cy="110" r="12" fill="${c}" opacity="0.8"/>
+      <path d="M60,60 L160,160 M160,60 L60,160" fill="none" stroke="white" stroke-width="2" opacity="0.15" stroke-dasharray="4,4"/></g>`,
+    
+    time: `
+      <g><circle cx="110" cy="110" r="75" fill="none" stroke="${c}" stroke-width="5" opacity="0.8"/>
+      <circle cx="110" cy="110" r="4" fill="${c}"/>
+      ${[0,1,2,3,4,5,6,7,8,9,10,11].map(i=>{const a=(i/12)*Math.PI*2-Math.PI/2;const r=i%3===0?62:67;return `<circle cx="${(110+Math.cos(a)*r).toFixed(1)}" cy="${(110+Math.sin(a)*r).toFixed(1)}" r="${i%3===0?4:2}" fill="${c}" opacity="${i%3===0?0.9:0.5}"/>`;}).join('')}
+      <line x1="110" y1="110" x2="110" y2="48" stroke="${c}" stroke-width="4" stroke-linecap="round"/>
+      <line x1="110" y1="110" x2="148" y2="122" stroke="${c}" stroke-width="3" stroke-linecap="round"/></g>`,
+    
+    love: `
+      <g><path d="M110,170 C70,140 30,110 30,78 C30,58 48,42 68,42 C86,42 100,54 110,66 C120,54 134,42 152,42 C172,42 190,58 190,78 C190,110 150,140 110,170 Z" fill="${c}" opacity="0.85"/>
+      <path d="M110,155 C78,132 50,112 50,88 C50,74 60,64 72,64 C86,64 98,74 110,86" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" opacity="0.35"/></g>`,
+    
+    happiness: `
+      <g><circle cx="110" cy="100" r="65" fill="${c}" opacity="0.85"/>
+      <circle cx="88" cy="88" r="8" fill="white" opacity="0.9"/>
+      <circle cx="132" cy="88" r="8" fill="white" opacity="0.9"/>
+      <path d="M80,115 Q110,142 140,115" fill="none" stroke="white" stroke-width="5" stroke-linecap="round"/>
+      ${[0,60,120,180,240,300].map(a=>`<circle cx="${(110+Math.cos(a*Math.PI/180)*82).toFixed(1)}" cy="${(100+Math.sin(a*Math.PI/180)*82).toFixed(1)}" r="5" fill="${c}" opacity="0.4"/>`).join('')}</g>`,
+    
+    sadness: `
+      <g><circle cx="110" cy="98" r="62" fill="${c}" opacity="0.75"/>
+      <circle cx="88" cy="86" r="7" fill="white" opacity="0.9"/>
+      <circle cx="132" cy="86" r="7" fill="white" opacity="0.9"/>
+      <path d="M82,118 Q110,102 138,118" fill="none" stroke="white" stroke-width="5" stroke-linecap="round"/>
+      <path d="M95,165 Q98,140 100,160" fill="none" stroke="${c}" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
+      <path d="M118,168 Q122,143 124,163" fill="none" stroke="${c}" stroke-width="3" stroke-linecap="round" opacity="0.6"/></g>`,
+    
+    freedom: `
+      <g><path d="M110,190 L110,90" stroke="${c}" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
+      <path d="M80,140 L110,90 L140,130" fill="none" stroke="${c}" stroke-width="4" stroke-linecap="round"/>
+      <path d="M60,60 Q90,80 110,40 Q130,80 160,60" fill="${c}" opacity="0.85" stroke="none"/>
+      <path d="M70,75 Q95,92 110,58 Q125,92 150,75" fill="${c}" opacity="0.55" stroke="none"/>
+      <circle cx="110" cy="190" r="5" fill="${c}" opacity="0.7"/></g>`,
+    
+    strength: `
+      <g><rect x="70" y="95" width="80" height="30" rx="15" fill="${c}" opacity="0.85"/>
+      <circle cx="55" cy="110" r="22" fill="${c}" opacity="0.85" stroke="white" stroke-width="4"/>
+      <circle cx="165" cy="110" r="22" fill="${c}" opacity="0.85" stroke="white" stroke-width="4"/>
+      <rect x="48" y="88" width="14" height="44" rx="7" fill="white" opacity="0.5"/>
+      <rect x="158" y="88" width="14" height="44" rx="7" fill="white" opacity="0.5"/></g>`,
+    
+    peace: `
+      <g><circle cx="110" cy="110" r="72" fill="${c}" opacity="0.15"/>
+      <circle cx="110" cy="110" r="72" fill="none" stroke="${c}" stroke-width="4" opacity="0.7"/>
+      <line x1="110" y1="38" x2="110" y2="182" stroke="${c}" stroke-width="4" opacity="0.7"/>
+      <line x1="110" y1="110" x2="48" y2="162" stroke="${c}" stroke-width="4" opacity="0.7"/>
+      <line x1="110" y1="110" x2="172" y2="162" stroke="${c}" stroke-width="4" opacity="0.7"/></g>`,
+    
+    dream: `
+      <g>${[0,1,2,3,4].map(i=>{const x=50+i*30,y=80-Math.abs(i-2)*15;const r=16-Math.abs(i-2)*2;return `<ellipse cx="${x}" cy="${y}" rx="${r}" ry="${r*0.7}" fill="${c}" opacity="${0.3+i*0.08}"/>`;}).join('')}
+      <circle cx="110" cy="150" r="35" fill="${c}" opacity="0.8"/>
+      <circle cx="92" cy="140" r="6" fill="white" opacity="0.8"/>
+      <circle cx="115" cy="143" r="5" fill="white" opacity="0.6"/>
+      <path d="M96,158 Q110,168 124,158" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"/></g>`,
+    
+    thought: `
+      <g><circle cx="110" cy="85" r="55" fill="${c}" opacity="0.82"/>
+      <circle cx="92" cy="135" r="12" fill="${c}" opacity="0.65"/>
+      <circle cx="82" cy="158" r="8" fill="${c}" opacity="0.45"/>
+      <circle cx="75" cy="175" r="5" fill="${c}" opacity="0.3"/>
+      <path d="M88,80 Q100,68 118,78" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" opacity="0.5"/></g>`,
+    
+    memory: `
+      <g><circle cx="110" cy="110" r="65" fill="none" stroke="${c}" stroke-width="2" stroke-dasharray="4,3" opacity="0.4"/>
+      ${[0,72,144,216,288].map((a,i)=>{const r=45;const x=110+Math.cos(a*Math.PI/180)*r;const y=110+Math.sin(a*Math.PI/180)*r;return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${10-i}" fill="${c}" opacity="${0.9-i*0.12}"/>`;}).join('')}
+      <circle cx="110" cy="110" r="12" fill="${c}" opacity="0.95"/></g>`,
+    
+    hope: `
+      <g><path d="M110,185 L110,70" stroke="${c}" stroke-width="5" stroke-linecap="round" opacity="0.6"/>
+      <circle cx="110" cy="55" r="20" fill="${c}" opacity="0.9"/>
+      ${[0,45,90,135,180,225,270,315].map(a=>{const r=38;return `<line x1="110" y1="55" x2="${(110+Math.cos(a*Math.PI/180)*r).toFixed(1)}" y2="${(55+Math.sin(a*Math.PI/180)*r).toFixed(1)}" stroke="${c}" stroke-width="3" stroke-linecap="round" opacity="0.6"/>`;}).join('')}</g>`,
+    
+    fear: `
+      <g><path d="M110,30 L135,80 L185,88 L148,124 L157,175 L110,150 L63,175 L72,124 L35,88 L85,80 Z" fill="${c}" opacity="0.85"/>
+      <circle cx="110" cy="105" r="18" fill="white" opacity="0.9"/>
+      <circle cx="110" cy="105" r="10" fill="${c}" opacity="0.95"/>
+      <circle cx="115" cy="100" r="4" fill="white"/></g>`,
+    
+    joy: `
+      <g>${[0,60,120,180,240,300].map((a,i)=>{const r=65;const x=110+Math.cos(a*Math.PI/180)*r;const y=110+Math.sin(a*Math.PI/180)*r;const colors=['#FF7B54','#FFD700','#4CAF8A','#7B8FF7','#F06292','#00BCD4'];return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="18" fill="${colors[i]}" opacity="0.8"/>`;}).join('')}
+      <circle cx="110" cy="110" r="28" fill="${c}" opacity="0.9"/>
+      <path d="M96,105 Q110,122 124,105" fill="none" stroke="white" stroke-width="4" stroke-linecap="round"/></g>`,
+    
+    curiosity: `
+      <g><circle cx="110" cy="90" r="50" fill="none" stroke="${c}" stroke-width="5" opacity="0.8"/>
+      <text x="110" y="102" text-anchor="middle" font-size="42" font-weight="900" fill="${c}" opacity="0.85" font-family="sans-serif">?</text>
+      <circle cx="110" cy="158" r="10" fill="${c}" opacity="0.85"/>
+      <path d="M88,52 Q70,28 52,44" fill="none" stroke="${c}" stroke-width="3" stroke-linecap="round" opacity="0.4"/>
+      <path d="M132,52 Q150,28 168,44" fill="none" stroke="${c}" stroke-width="3" stroke-linecap="round" opacity="0.4"/></g>`,
+    
+    courage: `
+      <g><polygon points="110,25 128,75 182,75 138,106 154,158 110,128 66,158 82,106 38,75 92,75" fill="${c}" opacity="0.85"/>
+      <polygon points="110,55 122,88 157,88 130,108 140,142 110,122 80,142 90,108 63,88 98,88" fill="white" opacity="0.25"/></g>`,
+    
+    friendship: `
+      <g><circle cx="82" cy="95" r="42" fill="${c}" opacity="0.75"/>
+      <circle cx="138" cy="95" r="42" fill="${c}" opacity="0.75"/>
+      <path d="M82,155 Q110,172 138,155" fill="none" stroke="${c}" stroke-width="4" stroke-linecap="round" opacity="0.7"/>
+      <circle cx="82" cy="155" r="7" fill="${c}" opacity="0.7"/>
+      <circle cx="138" cy="155" r="7" fill="${c}" opacity="0.7"/>
+      <line x1="82" y1="155" x2="138" y2="155" stroke="${c}" stroke-width="3" opacity="0.4"/></g>`,
+    
+    family: `
+      <g><circle cx="110" cy="50" r="22" fill="${c}" opacity="0.85"/>
+      <circle cx="62" cy="80" r="16" fill="${c}" opacity="0.75"/>
+      <circle cx="158" cy="80" r="16" fill="${c}" opacity="0.75"/>
+      <path d="M88,72 L110,90 L132,72" fill="none" stroke="${c}" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
+      <rect x="85" y="105" width="50" height="75" rx="14" fill="${c}" opacity="0.7"/>
+      <rect x="45" y="120" width="36" height="60" rx="10" fill="${c}" opacity="0.6"/>
+      <rect x="139" y="120" width="36" height="60" rx="10" fill="${c}" opacity="0.6"/></g>`,
+    
+    nature: `
+      <g><circle cx="110" cy="170" r="28" fill="${c}" opacity="0.4"/>
+      <path d="M110,155 L110,40" stroke="${c}" stroke-width="6" stroke-linecap="round"/>
+      <path d="M110,80 Q75,50 50,68" fill="none" stroke="${c}" stroke-width="4" stroke-linecap="round"/>
+      <path d="M110,100 Q145,68 170,82" fill="none" stroke="${c}" stroke-width="4" stroke-linecap="round"/>
+      <path d="M110,120 Q72,95 48,112" fill="none" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+      <circle cx="110" cy="40" r="14" fill="${c}" opacity="0.8"/></g>`,
+    
+    music: `
+      <g><circle cx="68" cy="162" r="22" fill="${c}" opacity="0.85"/>
+      <circle cx="152" cy="145" r="20" fill="${c}" opacity="0.75"/>
+      <path d="M90,162 L90,68 L174,45 L174,145" fill="none" stroke="${c}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+      <line x1="90" y1="68" x2="174" y2="45" stroke="${c}" stroke-width="5"/>
+      ${[0,1,2].map(i=>`<path d="M${105+i*5},${95+i*10} Q${115+i*5},${85+i*10} ${125+i*3},${95+i*10}" fill="none" stroke="${c}" stroke-width="2" opacity="${0.4-i*0.1}"/>"`).join('')}</g>`,
+    
+    creativity: `
+      <g><circle cx="110" cy="90" r="52" fill="${c}" opacity="0.2"/>
+      ${[0,45,90,135,180,225,270,315].map((a,i)=>{const r=52;const x=110+Math.cos(a*Math.PI/180)*r;const y=90+Math.sin(a*Math.PI/180)*r;const colors=['#FF7B54','#FFD700','#4CAF8A','#7B8FF7','#F06292','#00BCD4','#FF5722','#9C27B0'];return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="12" fill="${colors[i]}" opacity="0.75"/>`;}).join('')}
+      <circle cx="110" cy="90" r="20" fill="${c}" opacity="0.9"/>
+      <circle cx="110" cy="165" r="14" fill="${c}" opacity="0.6"/>
+      <rect x="104" y="113" width="12" height="40" fill="${c}" opacity="0.5"/></g>`,
+    
+    imagination: `
+      <g><path d="M110,30 Q160,30 170,75 Q185,120 150,145 Q130,158 110,185" fill="none" stroke="${c}" stroke-width="3" stroke-dasharray="6,4" opacity="0.5"/>
+      <path d="M110,30 Q60,30 50,75 Q35,120 70,145 Q90,158 110,185" fill="none" stroke="${c}" stroke-width="3" stroke-dasharray="6,4" opacity="0.5"/>
+      ${[30,70,110,145,185].map((y,i)=>`<circle cx="110" cy="${y}" r="${8+i*2}" fill="${c}" opacity="${0.9-i*0.15}"/>`).join('')}</g>`,
+    
+    learning: `
+      <g><rect x="50" y="55" width="120" height="90" rx="10" fill="${c}" opacity="0.15" stroke="${c}" stroke-width="3"/>
+      <line x1="70" y1="80" x2="150" y2="80" stroke="${c}" stroke-width="3" stroke-linecap="round" opacity="0.7"/>
+      <line x1="70" y1="98" x2="150" y2="98" stroke="${c}" stroke-width="3" stroke-linecap="round" opacity="0.7"/>
+      <line x1="70" y1="116" x2="120" y2="116" stroke="${c}" stroke-width="3" stroke-linecap="round" opacity="0.7"/>
+      <circle cx="110" cy="168" r="26" fill="${c}" opacity="0.85"/>
+      <path d="M100,162 L108,172 L122,156" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></g>`,
+    
+    change: `
+      <g><path d="M55,75 A65,65 0 1,1 55,145" fill="none" stroke="${c}" stroke-width="6" stroke-linecap="round" opacity="0.8"/>
+      <polygon points="55,55 38,80 72,80" fill="${c}" opacity="0.9"/>
+      <path d="M165,145 A65,65 0 1,1 165,75" fill="none" stroke="${c}" stroke-width="4" stroke-linecap="round" opacity="0.5"/>
+      <polygon points="165,165 148,140 182,140" fill="${c}" opacity="0.6"/></g>`,
+  };
+
+  const svg = designs[concept] || designs.thought;
+  return `<svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;padding:12px">${svg}</svg>`;
+}
+
+// ── CONFETTI ───────────────────────────────────────────────────────────────────
+const canvas=document.getElementById('confetti-canvas');
+// BUG FIX #4: redimensionar canvas al rotar pantalla
+function resizeCanvas(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+resizeCanvas();
+window.addEventListener('resize',resizeCanvas);
+const ctx=canvas.getContext('2d');
+let confParticles=[],confRunning=false;
+function launchConfetti(x,y){
+  const colors=['#FF7B54','#FFD700','#4CAF8A','#7B8FF7','#F06292','#00BCD4','#FF5722'];
+  for(let i=0;i<60;i++){
+    const angle=Math.random()*Math.PI*2,speed=3+Math.random()*6;
+    confParticles.push({x:x||window.innerWidth/2,y:y||window.innerHeight*0.6,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed-5,r:4+Math.random()*5,color:colors[~~(Math.random()*colors.length)],rot:Math.random()*360,rotv:(Math.random()-0.5)*14,alpha:1,shape:Math.random()>0.5?'rect':'circle'});
+  }
+  if(!confRunning){confRunning=true;animConf();}
+}
+function animConf(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  confParticles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=0.18;p.vx*=0.99;p.rot+=p.rotv;p.alpha-=0.016;ctx.save();ctx.globalAlpha=Math.max(0,p.alpha);ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.fillStyle=p.color;if(p.shape==='rect'){ctx.fillRect(-p.r,-p.r/2,p.r*2,p.r);}else{ctx.beginPath();ctx.arc(0,0,p.r,0,Math.PI*2);ctx.fill();}ctx.restore();});
+  confParticles=confParticles.filter(p=>p.alpha>0);
+  if(confParticles.length>0){requestAnimationFrame(animConf);}else{confRunning=false;ctx.clearRect(0,0,canvas.width,canvas.height);}
+}
+
+// ── ESTADO ─────────────────────────────────────────────────────────────────────
+let cards=[],currentIdx=0,selectedCat=null,firstTap={},screenBg="#FF7B54";
+let currentPage=1,totalPages=1,allCatCards=[];
+const imgCache={};
+let syllMode=false,syllDone=[];
+const completedCats=new Set(); // BUG FIX #9 (diseño): badges de completado
+
+// ── HOME ───────────────────────────────────────────────────────────────────────
+function buildHome(){
+  // Responsive: reorganizar layout en desktop
+  applyResponsiveLayout();
+  const grid=document.getElementById('catGrid');grid.innerHTML='';
+  Object.entries(CATS).forEach(([key,cat])=>{
+    const btn=document.createElement('button');
+    btn.className='cat-btn';btn.dataset.cat=key;
+    btn.style.cssText=`background:${cat.color}18;--cc:${cat.color}`;
+    const badge=completedCats.has(key)?`<span class="cat-done-badge">✓</span>`:'';
+    btn.innerHTML=`<span class="cat-icon" style="position:relative;">${cat.icon}${badge}</span><span class="cat-name">${cat.label}</span><span class="cat-count">${cat.items.length} palabras</span>`;
+    btn.onclick=()=>handleCatTap(key,btn,cat.color);
+    grid.appendChild(btn);
+  });
+}
+
+function applyResponsiveLayout(){
+  const home=document.getElementById('home');
+  if(!home)return;
+  const W=window.innerWidth;
+  if(W>=1024){
+    // Desktop: two-column layout
+    if(!document.getElementById('home-left')){
+      const header=home.querySelector('.home-header');
+      const randomBtn=home.querySelector('.random-btn');
+      const hintEl=home.querySelector('.hint-text');
+      const left=document.createElement('div');left.id='home-left';left.className='home-left';
+      const right=document.createElement('div');right.id='home-right';right.className='home-right';
+      if(header)left.appendChild(header);
+      if(randomBtn)left.appendChild(randomBtn);
+      if(hintEl)left.appendChild(hintEl);
+      // Mover sección label y grid a right
+      const sectionLabel=home.querySelector('.section-label');
+      const catGrid=home.querySelector('.category-grid');
+      if(sectionLabel)right.appendChild(sectionLabel);
+      if(catGrid)right.appendChild(catGrid);
+      home.innerHTML='';
+      home.appendChild(left);home.appendChild(right);
+    }
+  } else {
+    // Restablecer layout lineal si venía de desktop
+    if(document.getElementById('home-left')){
+      const left=document.getElementById('home-left');
+      const right=document.getElementById('home-right');
+      const items=[...left.children,...right.children];
+      home.innerHTML='';
+      items.forEach(el=>home.appendChild(el));
+    }
+  }
+}
+window.addEventListener('resize',()=>{applyResponsiveLayout();});
+
+function handleCatTap(key,btn,color){
+  const now=Date.now();
+  if(selectedCat===key&&firstTap[key]&&now-firstTap[key]<800){
+    btn.classList.add('confirm-pulse');
+    setTimeout(()=>launchWithRipple(key,color,btn),80);
+    return;
+  }
+  document.querySelectorAll('.cat-btn').forEach(b=>{b.classList.remove('selected');b.style.borderColor='transparent';});
+  selectedCat=key;firstTap[key]=now;
+  btn.classList.add('selected');btn.style.borderColor=color;
+  document.getElementById('hintText').textContent='¡Toca otra vez para entrar! 👆';
+}
+
+function launchWithRipple(catKey,color,btn){
+  const rect=btn.getBoundingClientRect();
+  const cx=rect.left+rect.width/2,cy=rect.top+rect.height/2;
+  screenBg=color;
+  const overlay=document.getElementById('ripple-overlay');
+  const size=Math.max(window.innerWidth,window.innerHeight)*0.06;
+  const circle=document.createElement('div');circle.className='ripple-circle';
+  circle.style.cssText=`width:${size}px;height:${size}px;left:${cx-size/2}px;top:${cy-size/2}px;background:${color};`;
+  overlay.appendChild(circle);
+  setTimeout(()=>{
+    document.getElementById('fc-screen').style.background=color;
+    // A1: shuffle siempre fresco al entrar (cada sesión diferente)
+    const shuffled=shuffle([...CATS[catKey].items]);
+    // Paginación A2: 15 por página en categoría
+    cards=paginateCards(shuffled,15);currentIdx=0;currentPage=1;
+    totalPages=Math.ceil(shuffled.length/15);allCatCards=shuffled;
+    showFCScreen();
+  },520);
+  // BUG FIX #3: limpiar overlay con timeout más largo
+  setTimeout(()=>{overlay.innerHTML='';},950);
+}
+
+function startRandom(){
+  // FIX 1: Interleave real — tomar 1 carta de cada categoría en ronda,
+  // shuffle las categorías primero, luego intercalar para máxima variedad.
+  const catKeys = shuffle(Object.keys(CATS));
+  const pools = catKeys.map(k => shuffle([...CATS[k].items].map(i=>({...i,catKey:k}))));
+  const interleaved = [];
+  let hasMore = true;
+  while(hasMore){
+    hasMore = false;
+    pools.forEach(pool => {
+      if(pool.length){ interleaved.push(pool.shift()); hasMore=true; }
+    });
+  }
+  // Segundo shuffle para romper el patrón de interleave
+  const shuffled = shuffle(interleaved);
+  screenBg='#2D2D2D';
+  allCatCards=shuffled;
+  currentPage=1;
+  cards=paginateCards(shuffled,25);currentIdx=0;
+  totalPages=Math.ceil(shuffled.length/25);
+  selectedCat=null;
+  document.getElementById('fc-screen').style.background='#2D2D2D';showFCScreen();
+}
+
+function paginateCards(arr,pageSize){
+  const page=currentPage||1;
+  const start=(page-1)*pageSize;
+  return arr.slice(start,start+pageSize);
+}
+
+function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=~~(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
+
+function showFCScreen(){
+  document.getElementById('home').style.opacity='0';
+  document.getElementById('home').style.pointerEvents='none';
+  document.getElementById('fc-screen').classList.add('visible');
+  renderCard(false);setupSwipe();
+}
+
+function closeCards(){
+  window.speechSynthesis&&window.speechSynthesis.cancel();
+  document.getElementById('fc-screen').classList.remove('visible');
+  const home=document.getElementById('home');
+  home.style.opacity='1';home.style.pointerEvents='all';
+  selectedCat=null;firstTap={};
+  document.querySelectorAll('.cat-btn').forEach(b=>{b.classList.remove('selected');b.style.borderColor='transparent';});
+  document.getElementById('hintText').textContent='Toca dos veces una categoría para empezar';
+  syllMode=false;document.getElementById('swipeGuide').style.display='flex';
+  // BUG FIX #1: resetear swipeSetup para que funcione al volver
+  swipeSetup=false;
+}
+
+// ── RENDERIZAR TARJETA ─────────────────────────────────────────────────────────
+async function renderCard(animate,dir){
+  const card=cards[currentIdx];if(!card){showDone();return;}
+  syllMode=false;syllDone=[];
+  window.speechSynthesis&&window.speechSynthesis.cancel();
+  document.getElementById('fcCounter').textContent=`${currentIdx+1}/${cards.length}`;
+  // Actualizar indicador de recompensa (sin bloquear render)
+  setTimeout(()=>{if(typeof updateRewardCounter==='function')updateRewardCounter();},60);
+  document.getElementById('progressFill').style.width=`${((currentIdx+1)/cards.length)*100}%`;
+  const catKey=card.catKey||selectedCat;
+  const catData=CATS[catKey];
+  const fcCard=document.getElementById('fcCard');
+  if(animate){
+    const cls=dir==='next'?'enter-right':'enter-left';
+    fcCard.classList.add(cls);
+    fcCard.addEventListener('animationend',()=>fcCard.classList.remove(cls),{once:true});
+  }
+  fcCard.innerHTML=`<div class="fc-image-wrap" id="fcImgWrap"></div><div class="fc-info"><span class="fc-cat-pill">${catData?catData.icon+' '+catData.label:''}</span><div class="fc-word-area" id="fcWordArea"></div><div class="fc-en" id="fcEn">${card.en}</div><div class="syll-complete-msg" id="syllMsg">¡Genial! 🌟 Desliza para continuar →</div></div>`;
+  const wrap=document.getElementById('fcImgWrap');
+  // BUG FIX #2: speakBtn en closure local, no variable global mutable
+  const speakBtn=document.createElement('button');
+  speakBtn.className='speak-btn';speakBtn.title='Escuchar';speakBtn.textContent='🔊';
+  speakBtn.onclick=e=>{e.stopPropagation();currentSpeakBtn=speakBtn;speak(card.es);};
+
+  if(card.swatch!==undefined){
+    wrap.innerHTML=`<div style="width:100%;height:240px;background:${card.swatch};${card.border?'border:2px solid #ddd;':''}display:flex;align-items:center;justify-content:center;"><span id="swEl" style="font-size:3.5rem;display:inline-block;">🎨</span></div>`;
+    wrap.appendChild(speakBtn);
+    wrap.onclick=e=>{if(speakBtn.contains(e.target))return;triggerAnim(document.getElementById('swEl'),'spin');currentSpeakBtn=speakBtn;speak(card.es);};
+    setTimeout(()=>{currentSpeakBtn=speakBtn;speak(card.es);},420);
+  } else if(card.numeral!==undefined){
+    wrap.innerHTML=`<div style="width:100%;height:240px;display:flex;align-items:center;justify-content:center;background:#f5f3ee;"><span id="numDisp" style="font-size:5.5rem;font-weight:900;color:#2D2D2D;font-family:'Baloo 2',cursive;display:inline-block;">${card.numeral}</span></div>`;
+    wrap.appendChild(speakBtn);
+    wrap.onclick=e=>{if(speakBtn.contains(e.target))return;triggerAnim(document.getElementById('numDisp'),'bounce');currentSpeakBtn=speakBtn;speak(card.es);};
+    setTimeout(()=>{currentSpeakBtn=speakBtn;speak(card.es);},420);
+  } else if(card.shape!==undefined){
+    const col=catData?catData.color:'#FF8F00';
+    wrap.innerHTML=`<div style="width:100%;height:240px;background:#fafaf8;">${drawShape(card.shape,col)}</div>`;
+    wrap.appendChild(speakBtn);
+    wrap.onclick=e=>{if(speakBtn.contains(e.target))return;triggerAnim(wrap.querySelector('svg'),'spin');currentSpeakBtn=speakBtn;speak(card.es);};
+    setTimeout(()=>{currentSpeakBtn=speakBtn;speak(card.es);},420);
+  } else if(card.abstract!==undefined){
+    const col=catData?catData.color:'#00897B';
+    const bg=col+'12';
+    wrap.innerHTML=`<div style="width:100%;height:240px;background:${bg};">${drawAbstract(card.abstract,col)}</div>`;
+    wrap.appendChild(speakBtn);
+    const svg=wrap.querySelector('svg');
+    wrap.onclick=e=>{if(speakBtn.contains(e.target))return;if(svg)triggerAnim(svg,'pulse');currentSpeakBtn=speakBtn;speak(card.es);};
+    setTimeout(()=>{currentSpeakBtn=speakBtn;speak(card.es);},420);
+  } else {
+    const animType=getAnim(card.es);const fallback=FALLBACKS[card.es]||'🖼️';
+    wrap.innerHTML=`<div class="loading-img"><div class="loading-dot"></div><div class="loading-dot"></div><div class="loading-dot"></div></div>`;
+    const cardWord=card.es; // capturar para verificar al resolver
+    getWikiImg(card.wiki).then(url=>{
+      // BUG FIX: ignorar si ya cambió de tarjeta
+      if(!cards[currentIdx]||cards[currentIdx].es!==cardWord)return;
+      if(url){
+        const img=document.createElement('img');img.src=url;img.alt=card.es;
+        img.style.cssText='width:100%;height:100%;object-fit:cover;';
+        img.onerror=()=>setEmojiWrap(wrap,fallback,animType,card.es,speakBtn);
+        wrap.innerHTML='';wrap.appendChild(img);wrap.appendChild(speakBtn);
+        setTimeout(()=>triggerAnim(img,animType),350);
+        wrap.onclick=e=>{if(speakBtn.contains(e.target))return;const r=wrap.getBoundingClientRect();spawnTapRipple(wrap,e.clientX-r.left,e.clientY-r.top);triggerAnim(img,animType);currentSpeakBtn=speakBtn;speak(card.es);};
+        setTimeout(()=>{currentSpeakBtn=speakBtn;speak(card.es);},420);
+      } else {setEmojiWrap(wrap,fallback,animType,card.es,speakBtn);}
+    });
+  }
+  renderWordDefault(card);
+}
+
+function setEmojiWrap(wrap,emoji,animType,word,speakBtn){
+  wrap.innerHTML=`<div style="display:flex;align-items:center;justify-content:center;width:100%;height:240px;background:#f5f3ee;"><span class="fc-emoji-display" id="emojiEl">${emoji}</span></div>`;
+  const el=document.getElementById('emojiEl');
+  wrap.appendChild(speakBtn);
+  setTimeout(()=>{currentSpeakBtn=speakBtn;triggerAnim(el,animType);speak(word);},300);
+  wrap.onclick=e=>{if(speakBtn.contains(e.target))return;const r=wrap.getBoundingClientRect();spawnTapRipple(wrap,e.clientX-r.left,e.clientY-r.top);triggerAnim(el,animType);currentSpeakBtn=speakBtn;speak(word);};
+}
+
+function triggerAnim(el,type){
+  if(!el)return;
+  const cls=['anim-bounce','anim-fly','anim-spin','anim-wiggle','anim-swim','anim-grow','anim-shake','anim-pulse'];
+  el.classList.remove(...cls);void el.offsetWidth;el.classList.add('anim-'+type);
+  el.addEventListener('animationend',()=>el.classList.remove('anim-'+type),{once:true});
+}
+
+function spawnTapRipple(parent,x,y){
+  const r=document.createElement('div');r.className='tap-ripple';
+  r.style.cssText=`left:${x-30}px;top:${y-30}px;`;
+  parent.appendChild(r);r.addEventListener('animationend',()=>r.remove(),{once:true});
+}
+
+async function getWikiImg(title){
+  // FIX navigator.onLine: si no hay conexión, salta directo al fallback
+  if(!navigator.onLine){imgCache[title]=null;return null;}
+  if(title in imgCache)return imgCache[title];
+  try{
+    const r=await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`);
+    const d=await r.json();
+    const url=d.thumbnail?d.thumbnail.source.replace(/\/\d+px-/,'/500px-'):null;
+    imgCache[title]=url;return url;
+  }catch(e){imgCache[title]=null;return null;}
+}
+
+// ── SÍLABAS ────────────────────────────────────────────────────────────────────
+function renderWordDefault(card){
+  const area=document.getElementById('fcWordArea');
+  const sylls=SYLLS[card.es];
+  if(sylls&&sylls.length>1){
+    area.innerHTML=`<div class="fc-word-hint" id="syllHint">toca para ver sílabas ✏️</div><div class="fc-word-single" style="cursor:pointer;" onclick="activateSyllMode()">${card.es}</div>`;
+  } else {
+    area.innerHTML=`<div class="fc-word-single">${card.es}</div>`;
+  }
+}
+
+function activateSyllMode(){
+  if(syllMode)return;syllMode=true;
+  const card=cards[currentIdx];const sylls=SYLLS[card.es]||[card.es];
+  syllDone=new Array(sylls.length).fill(false);
+  const hint=document.getElementById('syllHint');if(hint)hint.style.opacity='0';
+  const area=document.getElementById('fcWordArea');
+  let html='<div class="syllable-row">';
+  sylls.forEach((s,i)=>{
+    html+=`<span class="syllable" id="syl_${i}" onclick="tapSyllable(${i})">${s}</span>`;
+    if(i<sylls.length-1)html+=`<span class="syllable-sep">·</span>`;
+  });
+  html+='</div>';
+  setTimeout(()=>{area.innerHTML=html;},120);
+}
+
+function tapSyllable(idx){
+  if(syllDone[idx])return;
+  const card=cards[currentIdx];const sylls=SYLLS[card.es]||[card.es];
+  speak(sylls[idx]);syllDone[idx]=true;
+  const el=document.getElementById(`syl_${idx}`);
+  if(el){el.classList.add('active');setTimeout(()=>{el.classList.add('done');el.classList.remove('active');},130);}
+  if(syllDone.every(Boolean)){
+    setTimeout(()=>{
+      document.querySelectorAll('.syllable').forEach(s=>{s.style.background='#4CAF8A';s.style.color='white';s.style.transform='scale(1.1)';s.style.boxShadow='0 0 0 3px rgba(76,175,138,0.35)';});
+      const msg=document.getElementById('syllMsg');if(msg)msg.classList.add('show');
+      const area=document.getElementById('fcWordArea');
+      if(area){const r=area.getBoundingClientRect();launchConfetti(r.left+r.width/2,r.top+r.height/2);}else launchConfetti();
+      // Buscar el speakBtn activo en el wrap de imagen
+      const activeBtn=document.querySelector('.speak-btn');
+      if(activeBtn)currentSpeakBtn=activeBtn;
+      setTimeout(()=>speak(card.es),400);
+    },150);
+  }
+}
+
+// ── NAVEGACIÓN ─────────────────────────────────────────────────────────────────
+function goNext(){
+  if(currentIdx>=cards.length-1){showDone();return;}
+  const fc=document.getElementById('fcCard');fc.classList.add('swipe-left');
+  fc.addEventListener('animationend',()=>{fc.classList.remove('swipe-left');currentIdx++;renderCard(true,'next');},{once:true});
+}
+function goPrev(){
+  if(currentIdx===0)return;
+  const fc=document.getElementById('fcCard');fc.classList.add('swipe-right');
+  fc.addEventListener('animationend',()=>{fc.classList.remove('swipe-right');currentIdx--;renderCard(true,'prev');},{once:true});
+}
+
+function showDone(){
+  window.speechSynthesis&&window.speechSynthesis.cancel();
+  const isLastPage = currentPage>=totalPages;
+  const isRandom = !selectedCat;
+  document.getElementById('swipeGuide').style.display='none';
+
+  if(!isLastPage){
+    // ── Fin de página — no fin de categoría ────────────────────────
+    const pageSize=isRandom?25:15;
+    document.getElementById('fcCard').innerHTML=`
+      <div class="fc-done">
+        <div class="fc-done-emoji">🌟</div>
+        <div class="fc-done-title">¡Página ${currentPage} lista!</div>
+        <div class="fc-done-sub">Llevas ${currentPage*pageSize} de ${allCatCards.length} tarjetas</div>
+        <div style="width:100%;background:#f0ede8;border-radius:50px;height:8px;margin:0.5rem 0 1rem;">
+          <div style="width:${Math.round(currentPage/totalPages*100)}%;background:#4CAF8A;height:8px;border-radius:50px;transition:width 0.6s;"></div>
+        </div>
+        <div class="done-btns">
+          <button class="done-btn secondary" onclick="closeCards()">🏠 Inicio</button>
+          <button class="done-btn primary" onclick="nextPage()">Seguir ➜</button>
+        </div>
+      </div>`;
+    launchConfetti(window.innerWidth/2,window.innerHeight*0.6);
+    setTimeout(()=>speak('¡Muy bien! Sigue adelante.'),300);
+  } else {
+    // ── Fin real de categoría / modo aleatorio ─────────────────────
+    if(selectedCat){completedCats.add(selectedCat);
+
+// ── E3: CARTAS DE EXCLUSIVIDAD ─────────────────────────────────────────────
+const CAT_CARDS=[
+  {char:'🐊',stars:'⭐⭐⭐',title:'¡Lo lograste!',text:'Completaste todas las tarjetas de esta categoría.',quote:'Cada palabra que aprendes abre una puerta nueva.',author:'Coco el Cocodrilo'},
+  {char:'🦉',stars:'🌟🌟🌟',title:'¡Increíble!',text:'Tu memoria es poderosa. ¡Sigue así!',quote:'El conocimiento crece cada vez que lo compartes.',author:'Bú el Búho'},
+  {char:'🎒',stars:'✨✨✨',title:'¡Eres brillante!',text:'Aprendiste nuevas palabras hoy. ¡Qué logro!',quote:'Aprender es el regalo más grande que te puedes dar.',author:''},
+  {char:'🌈',stars:'💫💫💫',title:'¡Campeón!',text:'Tu esfuerzo vale muchísimo. ¡Orgulloso de ti!',quote:'Cada pequeño paso te lleva más lejos de lo que crees.',author:''},
+];
+const RANDOM_CARDS=[
+  {quote:'La imaginación es más importante que el conocimiento.',author:'Albert Einstein',icon:'🔭'},
+  {quote:'El que lee mucho y anda mucho, ve mucho y sabe mucho.',author:'Miguel de Cervantes',icon:'📖'},
+  {quote:'Aprender sin pensar es trabajo perdido; pensar sin aprender es peligroso.',author:'Confucio',icon:'🧘'},
+  {quote:'La educación es el arma más poderosa que puedes usar para cambiar el mundo.',author:'Nelson Mandela',icon:'✊'},
+  {quote:'No hay camino demasiado largo para quien avanza sin prisa.',author:'Séneca',icon:'🚶'},
+  {quote:'El aprendizaje es un tesoro que sigue a su dueño a todas partes.',author:'Proverbio chino',icon:'🏮'},
+  {quote:'Cuanto más aprendo, más me doy cuenta de cuánto me queda por aprender.',author:'Aristóteles',icon:'🏛️'},
+  {quote:'La práctica es el precio de la maestría.',author:'Thomas Edison',icon:'💡'},
+  {quote:'Cada libro es un nuevo viaje que vale la pena emprender.',author:'Octavio Paz',icon:'🌺'},
+  {quote:'Leer es soñar con los ojos abiertos.',author:'Jorge Luis Borges',icon:'🌙'},
+];
+
+let exclCardIdx=0; // rotación de cartas de categoría
+
+function showExclusiveCard(isRandom){
+  const overlay=document.getElementById('exclusive-overlay');
+  if(!overlay)return;
+  overlay.innerHTML='';
+  overlay.classList.add('active');
+
+  const card=document.createElement('div');
+  card.className='excl-card '+(isRandom?'random-card':'cat-card');
+  overlay.appendChild(card);
+
+  if(isRandom){
+    // Seleccionar carta aleatoria dorada
+    const data=RANDOM_CARDS[~~(Math.random()*RANDOM_CARDS.length)];
+    card.innerHTML=`
+      <span class="excl-char">${data.icon}</span>
+      <span class="excl-stars">🥇 MODO ALEATORIO 🥇</span>
+      <div class="excl-title" style="color:#FFD700;">Carta Exclusiva</div>
+      <div class="excl-quote" style="font-size:1rem;opacity:0.9;color:#FFF8E1;">"${data.quote}"</div>
+      <div class="excl-author" style="color:#FFD700;">— ${data.author}</div>
+      <div style="display:flex;gap:10px;justify-content:center;">
+        <button class="excl-btn" onclick="closeExclusive();closeCards()">🏠 Inicio</button>
+        <button class="excl-btn" onclick="closeExclusive();restartDeck()" style="background:#FF8C00;">Repetir 🔄</button>
+      </div>`;
+    // Partículas doradas
+    setTimeout(()=>{
+      for(let i=0;i<20;i++){
+        const p=document.createElement('div');p.className='gold-particle';
+        const ang=Math.random()*Math.PI*2,dist=80+Math.random()*120;
+        p.style.cssText=`left:50%;top:50%;--gx:${Math.cos(ang)*dist}px;--gy:${Math.sin(ang)*dist}px;animation-delay:${Math.random()*0.4}s;background:${['#FFD700','#FFA500','#FF8C00'][~~(Math.random()*3)]};`;
+        card.appendChild(p);
+      }
+    },200);
+  } else {
+    const data=CAT_CARDS[exclCardIdx%CAT_CARDS.length];
+    exclCardIdx++;
+    card.innerHTML=`
+      <span class="excl-char">${data.char}</span>
+      <span class="excl-stars">${data.stars}</span>
+      <div class="excl-title" style="color:#FF7B54;">${data.title}</div>
+      <div class="excl-text" style="color:#3D2B00;">${data.text}</div>
+      <div class="excl-quote">"${data.quote}"</div>
+      ${data.author?`<div class="excl-author" style="color:#FF9B54;">— ${data.author}</div>`:''}
+      <div style="display:flex;gap:10px;justify-content:center;">
+        <button class="excl-btn" onclick="closeExclusive();closeCards()">🏠 Inicio</button>
+        <button class="excl-btn" onclick="closeExclusive();restartDeck()">Repetir 🔄</button>
+      </div>`;
+  }
+  // Lanzar confetti
+  launchConfetti(window.innerWidth/2,window.innerHeight*0.4);
+  setTimeout(()=>card.classList.add('show'),50);
+  setTimeout(()=>speak(isRandom?'¡Felicitaciones! Completaste el modo aleatorio.':'¡Bravo! Lo hiciste muy bien.'),400);
+}
+
+function closeExclusive(){
+  const overlay=document.getElementById('exclusive-overlay');
+  if(!overlay)return;
+  const card=overlay.querySelector('.excl-card');
+  if(card)card.classList.remove('show');
+  setTimeout(()=>{overlay.classList.remove('active');overlay.innerHTML='';},400);
+}
+
+// ── D2: ANIMACIÓN DE DADO ──────────────────────────────────────────────────
+function animateDiceAndStart(){
+  const overlay=document.getElementById('dice-overlay');
+  const grid=document.getElementById('catGrid');
+  if(!overlay||!grid)return startRandom();
+
+  const btns=[...grid.querySelectorAll('.cat-btn')];
+  if(!btns.length)return startRandom();
+
+  overlay.innerHTML='';
+  overlay.classList.add('active');
+
+  const CATS_KEYS=Object.keys(CATS);
+  const totalSteps=22; // pasos de la ruleta
+  let step=0;
+  let lastHighlight=-1;
+  let delay=60; // ms inicial (rápido)
+
+  function highlightStep(){
+    // Quitar highlight anterior
+    if(lastHighlight>=0&&btns[lastHighlight]){
+      btns[lastHighlight].style.transform='';
+      btns[lastHighlight].style.boxShadow='';
+      btns[lastHighlight].style.zIndex='';
+    }
+    // Avanzar con patrón zigzag
+    const idx=step%btns.length;
+    const btn=btns[idx];
+    if(btn){
+      btn.style.transform='scale(1.15)';
+      btn.style.boxShadow=`0 0 0 3px ${CATS[CATS_KEYS[idx%CATS_KEYS.length]]?.color||'#FF7B54'},0 8px 24px rgba(0,0,0,0.2)`;
+      btn.style.zIndex='10';
+      // Sweep visual sobre el botón
+      const rect=btn.getBoundingClientRect();
+      const sweep=document.createElement('div');
+      sweep.className='dice-sweep';
+      sweep.style.cssText=`left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;height:${rect.height}px;`;
+      overlay.appendChild(sweep);
+      sweep.addEventListener('animationend',()=>sweep.remove());
+    }
+    lastHighlight=idx;
+    step++;
+    delay=step<totalSteps*0.5?delay:delay*1.08; // desacelera al final
+    if(step<totalSteps){
+      setTimeout(highlightStep,Math.min(delay,280));
+    } else {
+      // Animación final — flash dorado en el ganador
+      const winner=btns[lastHighlight];
+      if(winner){
+        const flash=document.createElement('div');
+        flash.className='dice-final-flash';
+        const rect=winner.getBoundingClientRect();
+        flash.style.cssText=`left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;height:${rect.height}px;`;
+        overlay.appendChild(flash);
+        // Sacudir el dado
+        const diceEl=document.querySelector('.dice-icon');
+        if(diceEl){diceEl.style.animation='diceRoll 0.15s ease 3';setTimeout(()=>diceEl.style.animation='',500);}
+      }
+      setTimeout(()=>{
+        // Limpiar
+        btns.forEach(b=>{b.style.transform='';b.style.boxShadow='';b.style.zIndex='';});
+        overlay.innerHTML='';
+        overlay.classList.remove('active');
+        // Lanzar modo aleatorio
+        startRandom();
+      },600);
+    }
+  }
+  highlightStep();
+}
+
+buildHome();}
+    showExclusiveCard(isRandom);
+  }
+}
+
+function nextPage(){
+  currentPage++;
+  const pageSize=selectedCat?15:25;
+  cards=paginateCards(allCatCards,pageSize);
+  currentIdx=0;
+  document.getElementById('swipeGuide').style.display='flex';
+  renderCard(false);
+}
+
+function restartDeck(){
+  currentPage=1;totalPages=Math.ceil(allCatCards.length/(selectedCat?15:25));
+  cards=paginateCards(shuffle([...allCatCards]),selectedCat?15:25);
+  currentIdx=0;
+  document.getElementById('swipeGuide').style.display='flex';
+  renderCard(false);
+}
+
+// restartDeck incluido en showDone
+
+// ── SWIPE ──────────────────────────────────────────────────────────────────────
+let swipeSetup=false; // BUG FIX #1: se resetea en closeCards()
+function setupSwipe(){
+  if(swipeSetup)return;swipeSetup=true;
+  const wrap=document.getElementById('fcCardWrap');
+  let startX=0,startY=0,dx=0,dy=0,dragging=false;const THRESH=55;
+  wrap.addEventListener('pointerdown',e=>{
+    const cardEl=document.getElementById('fcCard');if(!cardEl)return;
+    const rect=cardEl.getBoundingClientRect();
+    if(e.clientY-rect.top>rect.height*0.58)return;
+    startX=e.clientX;startY=e.clientY;dx=0;dy=0;dragging=true;
+    wrap.setPointerCapture(e.pointerId);cardEl.classList.add('swiping');
+  });
+  wrap.addEventListener('pointermove',e=>{
+    if(!dragging)return;dx=e.clientX-startX;dy=e.clientY-startY;
+    if(Math.abs(dy)>Math.abs(dx)*1.4)return;
+    const card=document.getElementById('fcCard');
+    if(card)card.style.transform=`translateX(${dx}px) rotate(${dx*0.04}deg)`;
+    const hL=document.getElementById('hintLeft'),hR=document.getElementById('hintRight');
+    if(dx>30){hR.style.opacity=Math.min(1,(dx-30)/40);hL.style.opacity=0;}
+    else if(dx<-30){hL.style.opacity=Math.min(1,(-dx-30)/40);hR.style.opacity=0;}
+    else{hL.style.opacity=0;hR.style.opacity=0;}
+  });
+  wrap.addEventListener('pointerup',()=>{
+    if(!dragging)return;dragging=false;
+    document.getElementById('hintLeft').style.opacity=0;
+    document.getElementById('hintRight').style.opacity=0;
+    const card=document.getElementById('fcCard');
+    if(card){card.classList.remove('swiping');card.style.transform='';}
+    if(dx>THRESH)goPrev();else if(dx<-THRESH)goNext();
+  });
+  wrap.addEventListener('pointercancel',()=>{
+    dragging=false;
+    const card=document.getElementById('fcCard');
+    if(card){card.classList.remove('swiping');card.style.transform='';}
+    document.getElementById('hintLeft').style.opacity=0;
+    document.getElementById('hintRight').style.opacity=0;
+  });
+}
+
+// ── SPLASH — MOTOR DE ESCENAS ─────────────────────────────────────────────────
+(function(){
+  const HOUR=new Date().getHours();
+  let nightMode=HOUR<6||HOUR>=19;
+  let sceneRunning=false;
+
+  const THEME={
+    day:{
+      grad:'linear-gradient(180deg,#F5C842 0%,#FFD96B 28%,#FFF0B3 62%,#E2F5D8 100%)',
+      text:'#3D2B00',btnBg:'white',btnColor:'#3D2B00',
+      greeting:'Buenos días',title:'¡Hola!\nEs hora\nde aprender',
+      sub:'¿Cuál categoría exploramos hoy?',btn:'¡Empezamos! 🎒',
+    },
+    night:{
+      grad:'linear-gradient(180deg,#1A1440 0%,#2E1E6E 30%,#4A2888 60%,#7B3FA8 100%)',
+      text:'#EDE0FF',btnBg:'white',btnColor:'#2E1E6E',
+      greeting:'Buenas noches',title:'¡Hola!\nA repasar\nantes de dormir',
+      sub:'Aprende unas palabras más',btn:'¡Empezamos! 🎒',
+    }
+  };
+
+  // ── SVG COCO con variantes expresivas ─────────────────────────────────────
+  function svgCoco(v){
+    v=v||'normal';
+    const eyes={
+      normal:`<g transform="translate(80,76)"><ellipse cx="0" cy="0" rx="13" ry="13" fill="#2D6B2D"/><ellipse cx="0" cy="0" rx="11" ry="11" fill="white"/><path d="M-9,1 Q0,-9 9,1" fill="none" stroke="#2D2D2D" stroke-width="2.8" stroke-linecap="round"/></g><g transform="translate(120,76)"><ellipse cx="0" cy="0" rx="13" ry="13" fill="#2D6B2D"/><ellipse cx="0" cy="0" rx="11" ry="11" fill="white"/><path d="M-9,1 Q0,-9 9,1" fill="none" stroke="#2D2D2D" stroke-width="2.8" stroke-linecap="round"/></g>`,
+      scared:`<g transform="translate(80,76)"><ellipse cx="0" cy="0" rx="13" ry="13" fill="#2D6B2D"/><ellipse cx="0" cy="0" rx="11" ry="11" fill="white"/><ellipse cx="0" cy="1" rx="7" ry="8" fill="#111"/><ellipse cx="-2" cy="-2" rx="3" ry="3" fill="white"/></g><g transform="translate(120,76)"><ellipse cx="0" cy="0" rx="13" ry="13" fill="#2D6B2D"/><ellipse cx="0" cy="0" rx="11" ry="11" fill="white"/><ellipse cx="0" cy="1" rx="7" ry="8" fill="#111"/><ellipse cx="-2" cy="-2" rx="3" ry="3" fill="white"/></g>`,
+      saludo:`<g transform="translate(80,76)"><ellipse cx="0" cy="0" rx="13" ry="13" fill="#2D6B2D"/><ellipse cx="0" cy="0" rx="11" ry="11" fill="white"/><path d="M-8,2 Q0,-11 8,2" fill="none" stroke="#2D2D2D" stroke-width="3" stroke-linecap="round"/></g><g transform="translate(120,76)"><ellipse cx="0" cy="0" rx="13" ry="13" fill="#2D6B2D"/><ellipse cx="0" cy="0" rx="11" ry="11" fill="white"/><path d="M-8,2 Q0,-11 8,2" fill="none" stroke="#2D2D2D" stroke-width="3" stroke-linecap="round"/></g>`,
+      gesto:`<g transform="translate(80,76)"><ellipse cx="0" cy="0" rx="13" ry="13" fill="#2D6B2D"/><ellipse cx="0" cy="0" rx="11" ry="11" fill="white"/><ellipse cx="0" cy="-3" rx="6" ry="7" fill="#111"/></g><g transform="translate(120,76)"><ellipse cx="0" cy="0" rx="13" ry="13" fill="#2D6B2D"/><ellipse cx="0" cy="0" rx="11" ry="11" fill="white"/><ellipse cx="0" cy="-3" rx="6" ry="7" fill="#111"/></g>`,
+    };
+    const mouths={
+      normal:`<path d="M74,115 Q100,130 126,115" fill="none" stroke="#2D6B2D" stroke-width="3.5" stroke-linecap="round"/><path d="M82,118 L84,127 L88,118" fill="#FFFDE7"/><path d="M97,120 L99,128 L103,120" fill="#FFFDE7"/><path d="M112,118 L114,127 L118,118" fill="#FFFDE7"/>`,
+      scared:`<path d="M82,124 Q100,114 118,124" fill="none" stroke="#2D6B2D" stroke-width="3.5" stroke-linecap="round"/>`,
+      saludo:`<path d="M70,113 Q100,136 130,113" fill="none" stroke="#2D6B2D" stroke-width="3.5" stroke-linecap="round"/><path d="M78,117 L80,130 L86,117" fill="#FFFDE7"/><path d="M96,120 L99,132 L103,120" fill="#FFFDE7"/><path d="M114,117 L116,130 L122,117" fill="#FFFDE7"/>`,
+      gesto:`<path d="M80,120 Q100,128 120,120" fill="none" stroke="#2D6B2D" stroke-width="3" stroke-linecap="round"/>`,
+    };
+    const armR=(v==='gesto'||v==='saludo')
+      ?`<ellipse cx="155" cy="136" rx="13" ry="24" fill="#5CB85C" transform="rotate(-58,155,136)"/>`
+      :`<ellipse cx="150" cy="160" rx="14" ry="22" fill="#5CB85C" transform="rotate(20,150,160)"/>`;
+    return `<svg viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="100" cy="156" rx="62" ry="52" fill="#5CB85C"/>
+      <ellipse cx="100" cy="163" rx="42" ry="34" fill="#A8E6A3" opacity="0.9"/>
+      <ellipse cx="100" cy="109" rx="34" ry="26" fill="#5CB85C"/>
+      <ellipse cx="100" cy="82" rx="52" ry="44" fill="#5CB85C"/>
+      <ellipse cx="100" cy="62" rx="44" ry="28" fill="#4CAF50" opacity="0.55"/>
+      <ellipse cx="78" cy="42" rx="9" ry="12" fill="#3D8B3D"/>
+      <ellipse cx="93" cy="34" rx="9" ry="13" fill="#3D8B3D"/>
+      <ellipse cx="108" cy="32" rx="9" ry="13" fill="#3D8B3D"/>
+      <ellipse cx="122" cy="36" rx="8" ry="11" fill="#3D8B3D"/>
+      ${eyes[v]||eyes.normal}
+      <ellipse cx="92" cy="99" rx="5" ry="4" fill="#2D6B2D"/>
+      <ellipse cx="108" cy="99" rx="5" ry="4" fill="#2D6B2D"/>
+      ${mouths[v]||mouths.normal}
+      <ellipse cx="50" cy="160" rx="14" ry="22" fill="#5CB85C" transform="rotate(-20,50,160)"/>
+      ${armR}
+      <ellipse cx="74" cy="203" rx="18" ry="10" fill="#4CAF50"/>
+      <ellipse cx="126" cy="203" rx="18" ry="10" fill="#4CAF50"/>
+      <ellipse cx="70" cy="90" rx="10" ry="7" fill="#FF9B9B" opacity="0.4"/>
+      <ellipse cx="130" cy="90" rx="10" ry="7" fill="#FF9B9B" opacity="0.4"/>
+    </svg>`;
+  }
+
+  // ── SVG BÚ con variantes ──────────────────────────────────────────────────
+  function svgBu(v){
+    v=v||'normal';
+    const eyes={
+      normal:`<ellipse cx="78" cy="84" rx="12" ry="12" fill="#2D1A60"/><ellipse cx="122" cy="84" rx="12" ry="12" fill="#2D1A60"/><ellipse cx="82" cy="79" rx="4" ry="4" fill="white" opacity="0.88"/><ellipse cx="126" cy="79" rx="4" ry="4" fill="white" opacity="0.88"/>`,
+      confused:`<ellipse cx="78" cy="84" rx="12" ry="12" fill="#2D1A60"/><ellipse cx="122" cy="84" rx="12" ry="12" fill="#2D1A60"/><ellipse cx="82" cy="82" rx="4" ry="5" fill="white" opacity="0.88"/><ellipse cx="126" cy="82" rx="4" ry="5" fill="white" opacity="0.88"/><line x1="70" y1="73" x2="74" y2="78" stroke="#EDE0FF" stroke-width="2.5" stroke-linecap="round"/><line x1="130" y1="73" x2="126" y2="78" stroke="#EDE0FF" stroke-width="2.5" stroke-linecap="round"/>`,
+      saludo:`<ellipse cx="78" cy="84" rx="12" ry="12" fill="#2D1A60"/><ellipse cx="122" cy="84" rx="12" ry="12" fill="#2D1A60"/><ellipse cx="82" cy="79" rx="4.5" ry="4.5" fill="white" opacity="0.92"/><ellipse cx="126" cy="79" rx="4.5" ry="4.5" fill="white" opacity="0.92"/><path d="M70,78 Q78,70 86,78" fill="#4A3080" opacity="0.6"/><path d="M114,78 Q122,70 130,78" fill="#4A3080" opacity="0.6"/>`,
+      escape:`<ellipse cx="78" cy="84" rx="10" ry="14" fill="#2D1A60"/><ellipse cx="122" cy="84" rx="10" ry="14" fill="#2D1A60"/><ellipse cx="82" cy="80" rx="3" ry="4" fill="white" opacity="0.88"/><ellipse cx="126" cy="80" rx="3" ry="4" fill="white" opacity="0.88"/>`,
+    };
+    const mouths={
+      confused:`<path d="M90,108 Q100,102 110,108" fill="none" stroke="#E8A030" stroke-width="2.5" stroke-linecap="round"/>`,
+      saludo:`<path d="M86,106 Q100,120 114,106" fill="none" stroke="#E8A030" stroke-width="3" stroke-linecap="round"/>`,
+    };
+    const wingR=(v==='saludo')
+      ?`<ellipse cx="162" cy="132" rx="15" ry="28" fill="#3D2870" transform="rotate(-52,162,132)"/>`
+      :`<ellipse cx="154" cy="162" rx="16" ry="26" fill="#3D2870" transform="rotate(15,154,162)"/>`;
+    return `<svg viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="100" cy="158" rx="56" ry="54" fill="#4A3080"/>
+      <ellipse cx="100" cy="165" rx="40" ry="38" fill="#6B4DB0" opacity="0.55"/>
+      <ellipse cx="100" cy="168" rx="30" ry="28" fill="#EDE0FF" opacity="0.88"/>
+      <ellipse cx="68" cy="140" rx="18" ry="22" fill="#3D2870" opacity="0.65"/>
+      <ellipse cx="132" cy="140" rx="18" ry="22" fill="#3D2870" opacity="0.65"/>
+      <ellipse cx="100" cy="84" rx="52" ry="52" fill="#4A3080"/>
+      <path d="M62,48 Q55,22 72,36 Q78,28 82,48" fill="#4A3080"/>
+      <path d="M138,48 Q145,22 128,36 Q122,28 118,48" fill="#4A3080"/>
+      <path d="M64,46 Q58,30 72,38" fill="#7B5CB8" opacity="0.65"/>
+      <path d="M136,46 Q142,30 128,38" fill="#7B5CB8" opacity="0.65"/>
+      <ellipse cx="78" cy="82" rx="22" ry="22" fill="#EDE0FF"/>
+      <ellipse cx="122" cy="82" rx="22" ry="22" fill="#EDE0FF"/>
+      <ellipse cx="78" cy="82" rx="17" ry="17" fill="#FFF9E6"/>
+      <ellipse cx="122" cy="82" rx="17" ry="17" fill="#FFF9E6"/>
+      <path d="M56,78 Q78,70 100,78" fill="#4A3080" opacity="0.5"/>
+      <path d="M100,78 Q122,70 144,78" fill="#4A3080" opacity="0.5"/>
+      ${eyes[v]||eyes.normal}
+      <path d="M94,100 L100,112 L106,100 Z" fill="#E8A030"/>
+      ${mouths[v]||''}
+      <ellipse cx="58" cy="94" rx="10" ry="7" fill="#CE93D8" opacity="0.38"/>
+      <ellipse cx="142" cy="94" rx="10" ry="7" fill="#CE93D8" opacity="0.38"/>
+      <ellipse cx="46" cy="162" rx="16" ry="26" fill="#3D2870" transform="rotate(-15,46,162)"/>
+      ${wingR}
+      <path d="M84,210 Q78,220 72,218 M84,210 Q82,222 76,222 M84,210 Q86,222 80,224" fill="none" stroke="#E8A030" stroke-width="3.5" stroke-linecap="round"/>
+      <path d="M116,210 Q122,220 128,218 M116,210 Q118,222 124,222 M116,210 Q114,222 120,224" fill="none" stroke="#E8A030" stroke-width="3.5" stroke-linecap="round"/>
+    </svg>`;
+  }
+
+  // ── SOL Y LUNA ────────────────────────────────────────────────────────────
+  function renderSkyBody(night){
+    const el=document.getElementById('sky-body');if(!el)return;
+    if(!night){
+      el.innerHTML=`<svg viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
+        ${[...Array(12)].map((_,i)=>{const a=(i/12)*Math.PI*2,cx=36+Math.cos(a)*27,cy=36+Math.sin(a)*27;return`<ellipse cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" rx="3" ry="10" fill="rgba(255,220,50,0.32)" transform="rotate(${i*30},${cx.toFixed(1)},${cy.toFixed(1)})"/>`;}).join('')}
+        <circle cx="36" cy="36" r="24" fill="#FFD700"/>
+        <circle cx="36" cy="36" r="18" fill="#FFEC6E"/>
+      </svg>`;
+    } else {
+      el.innerHTML=`<svg viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="38" cy="34" r="27" fill="#EDE0FF"/>
+        <circle cx="28" cy="28" r="21" fill="#2E1E6E"/>
+        <circle cx="56" cy="16" r="3" fill="#EDE0FF" opacity="0.7"/>
+        <circle cx="64" cy="28" r="2" fill="#EDE0FF" opacity="0.5"/>
+        <circle cx="60" cy="50" r="1.5" fill="#EDE0FF" opacity="0.6"/>
+      </svg>`;
+    }
+  }
+
+  function animSkyIn(night){
+    const el=document.getElementById('sky-body');if(!el)return;
+    renderSkyBody(night);
+    el.style.animation='none';el.style.opacity='0';
+    if(!night){el.style.right='-20%';el.style.left='auto';}
+    else{el.style.left='-20%';el.style.right='auto';}
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      el.style.animation=night
+        ?'lunaEntrada 1.1s cubic-bezier(.4,0,.2,1) forwards'
+        :'solEntrada 1.1s cubic-bezier(.4,0,.2,1) forwards';
+    }));
+  }
+
+  function animSkyOut(night,cb){
+    const el=document.getElementById('sky-body');if(!el){cb&&cb();return;}
+    el.style.animation=night
+      ?'lunaSalida 0.65s cubic-bezier(.4,0,.2,1) forwards'
+      :'solSalida 0.65s cubic-bezier(.4,0,.2,1) forwards';
+    setTimeout(()=>cb&&cb(),680);
+  }
+
+  // ── CIELO (canvas decorativo) ─────────────────────────────────────────────
+  function paintSky(night){
+    const cvs=document.getElementById('splash-canvas');if(!cvs)return;
+    const W=cvs.offsetWidth||window.innerWidth;
+    const H=cvs.offsetHeight||window.innerHeight;
+    cvs.width=W*2;cvs.height=H*2;
+    const c=cvs.getContext('2d');c.scale(2,2);c.clearRect(0,0,W,H);
+    if(!night){
+      for(let i=0;i<12;i++){
+        c.save();c.translate(W*0.8,H*0.22);c.rotate((i/12)*Math.PI*2);
+        c.fillStyle='rgba(255,220,50,0.22)';
+        c.beginPath();c.ellipse(0,-44,4,20,0,0,Math.PI*2);c.fill();c.restore();
+      }
+      [[W*0.16,H*0.24,1],[W*0.5,H*0.14,0.72],[W*0.07,H*0.44,0.58]].forEach(([x,y,s])=>{
+        c.fillStyle='rgba(255,255,255,0.78)';
+        [[0,0,18],[22,4,14],[-20,6,12],[8,10,16]].forEach(([dx,dy,r])=>{
+          c.beginPath();c.arc(x+dx*s,y+dy*s,r*s,0,Math.PI*2);c.fill();
+        });
+      });
+    } else {
+      [[0.12,0.09,3],[0.28,0.05,2],[0.45,0.18,2.5],[0.58,0.07,1.8],
+       [0.18,0.31,1.5],[0.38,0.37,2],[0.54,0.26,1.5],[0.07,0.49,1.8],
+       [0.68,0.36,2.2],[0.84,0.14,2],[0.9,0.48,1.5],[0.46,0.44,1.2]
+      ].forEach(([sx,sy,sz],i)=>{
+        c.fillStyle=`rgba(237,224,255,${0.4+0.6*(i%2)})`;
+        c.beginPath();c.arc(sx*W,sy*H,sz,0,Math.PI*2);c.fill();
+      });
+    }
+  }
+
+  // ── HELPERS ───────────────────────────────────────────────────────────────
+  const wait=ms=>new Promise(r=>setTimeout(r,ms));
+
+  function setChar(svgStr,cssExtra){
+    const el=document.getElementById('splash-char');if(!el)return;
+    el.innerHTML=svgStr;
+    el.style.display='block';
+    el.style.animation='none';
+    if(cssExtra)Object.assign(el.style,cssExtra);
+  }
+
+  function idleChar(svgStr){
+    const el=document.getElementById('splash-char');if(!el)return;
+    el.innerHTML=svgStr;
+    el.style.display='block';
+    el.style.animation='none';
+    void el.offsetWidth;
+    el.style.animation='idleBob 3.2s ease-in-out infinite';
+  }
+
+  function runCharAnim(animName,durationMs){
+    const el=document.getElementById('splash-char');if(!el)return Promise.resolve();
+    return new Promise(resolve=>{
+      el.style.animation='none';void el.offsetWidth;
+      el.style.animation=`${animName} ${durationMs}ms ease both`;
+      setTimeout(resolve,durationMs);
+    });
+  }
+
+  function showText(night){
+    const t=night?THEME.night:THEME.day;
+    document.getElementById('splash-bg').style.background=t.grad;
+    const gr=document.getElementById('sp-greeting');
+    const ti=document.getElementById('sp-title');
+    const su=document.getElementById('sp-sub');
+    const btn=document.getElementById('splash-btn');
+    const tog=document.getElementById('sp-toggle');
+    const tl=document.getElementById('sp-time');
+    if(gr){gr.textContent=t.greeting;gr.style.color=t.text;}
+    if(ti){ti.innerHTML=t.title.split('\n').join('<br>');ti.style.color=t.text;}
+    if(su){su.textContent=t.sub;su.style.color=t.text;}
+    if(btn){btn.textContent=t.btn;btn.style.background=t.btnBg;btn.style.color=t.btnColor;}
+    if(tog){tog.textContent=night?'☀️ día':'🌙 noche';tog.style.color=t.text;}
+    const hint=document.querySelector('.sp-swipe-hint');
+    if(hint)hint.style.color=t.text;
+    if(tl){
+      const now=new Date();
+      tl.textContent=`${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+      tl.style.color=t.text;
+    }
+    document.getElementById('splash-text').classList.remove('hidden-text');
+    document.getElementById('splash-btn-wrap').classList.remove('hidden-text');
+  }
+
+  function hideText(){
+    document.getElementById('splash-text').classList.add('hidden-text');
+    document.getElementById('splash-btn-wrap').classList.add('hidden-text');
+  }
+
+  function spawnParticles(){
+    const splash=document.getElementById('splash');
+    const charEl=document.getElementById('splash-char');
+    if(!splash||!charEl)return;
+    const r=charEl.getBoundingClientRect(),sr=splash.getBoundingClientRect();
+    const cx=r.left-sr.left+r.width/2,cy=r.top-sr.top+r.height/2;
+    const cols=nightMode
+      ?['#CE93D8','#9B72CF','#EDE0FF','#FFD700','#A0C4FF']
+      :['#FF7B54','#FFD700','#4CAF8A','#7B8FF7','#F06292','#56C063'];
+    for(let i=0;i<18;i++){
+      const p=document.createElement('div');p.className='sp-particle';
+      const sz=5+Math.random()*9,ang=Math.random()*Math.PI*2,dist=45+Math.random()*80;
+      p.style.cssText=`width:${sz}px;height:${sz}px;background:${cols[~~(Math.random()*cols.length)]};`
+        +`left:${cx-sz/2}px;top:${cy-sz/2}px;`
+        +`--tx:${Math.cos(ang)*dist}px;--ty:${Math.sin(ang)*dist}px;`
+        +`animation-duration:${0.65+Math.random()*0.5}s;`;
+      splash.appendChild(p);
+      p.addEventListener('animationend',()=>p.remove());
+    }
+  }
+
+  // ── ESCENA DÍA: Coco entra desde fondo-izquierda al frente ───────────────
+  async function sceneDayEnter(){
+    sceneRunning=true;
+    document.getElementById('splash-bg').style.background=THEME.day.grad;
+    animSkyIn(false);
+    await wait(200);
+    // Aparece pequeño en fondo-izquierda
+    setChar(svgCoco('normal'),{
+      left:'-55%',right:'auto',bottom:'30px',
+      transform:'scale(0.22)',opacity:'0',
+      animation:'none'
+    });
+    await wait(80);
+    // Vuela al frente-centro creciendo
+    const el=document.getElementById('splash-char');
+    if(el){
+      el.style.animation='none';void el.offsetWidth;
+      el.style.animation='cocoEntrada 1.5s cubic-bezier(.22,1,.36,1) forwards';
+    }
+    await wait(1500);
+    // Saluda — salta y ríe
+    setChar(svgCoco('saludo'));
+    await runCharAnim('cocoSaludo',850);
+    spawnParticles();
+    await wait(200);
+    showText(false);
+    await wait(400);
+    idleChar(svgCoco('normal'));
+    sceneRunning=false;
+  }
+
+  // ── ESCENA NOCHE: sombra → Bú entra der-izq → confundido → choca → saluda
+  async function sceneNightEnter(){
+    sceneRunning=true;
+    document.getElementById('splash-bg').style.background=THEME.night.grad;
+    animSkyIn(true);
+    await wait(200);
+    // Sombra gigante crece primero
+    const shadow=document.getElementById('buho-shadow');
+    if(shadow){
+      shadow.style.cssText='position:absolute;bottom:60px;left:50%;width:340px;height:340px;border-radius:50%;background:radial-gradient(ellipse,rgba(30,10,70,0.62) 0%,transparent 72%);transform:translateX(-50%) scale(0);pointer-events:none;opacity:0;z-index:1;transition:transform 1.1s cubic-bezier(.34,1.12,.64,1),opacity 0.4s;';
+      await wait(50);
+      shadow.style.opacity='1';shadow.style.transform='translateX(-50%) scale(1)';
+    }
+    await wait(500);
+    // Bú entra pequeño desde fondo-derecha
+    setChar(svgBu('escape'),{
+      right:'-55%',left:'auto',bottom:'30px',
+      transform:'scale(0.22)',opacity:'0',
+      animation:'none'
+    });
+    await wait(80);
+    const el=document.getElementById('splash-char');
+    if(el){
+      el.style.animation='none';void el.offsetWidth;
+      el.style.animation='buhoEntrada 1.6s cubic-bezier(.22,1,.36,1) forwards';
+    }
+    await wait(1600);
+    // Sombra desaparece
+    if(shadow){shadow.style.transition='opacity 0.6s,transform 0.7s';shadow.style.opacity='0';shadow.style.transform='translateX(-50%) scale(0.1)';}
+    // Confundido — mira a los lados
+    setChar(svgBu('confused'));
+    await runCharAnim('buhoSaludo',1400);
+    // Choca con la pantalla
+    setChar(svgBu('confused'));
+    await runCharAnim('buhoChoque',1300);
+    // Se levanta y saluda
+    setChar(svgBu('saludo'));
+    await runCharAnim('buhoSaludo',900);
+    spawnParticles();
+    await wait(200);
+    showText(true);
+    await wait(400);
+    idleChar(svgBu('normal'));
+    sceneRunning=false;
+  }
+
+  // ── TRANSICIÓN DÍA → NOCHE: Bú asusta a Coco ─────────────────────────────
+  async function sceneToNight(){
+    sceneRunning=true;
+    hideText();
+    // Coco se asusta
+    setChar(svgCoco('scared'));
+    const shadow=document.getElementById('buho-shadow');
+    if(shadow){
+      shadow.style.cssText='position:absolute;bottom:60px;left:50%;width:340px;height:340px;border-radius:50%;background:radial-gradient(ellipse,rgba(30,10,70,0.62) 0%,transparent 72%);transform:translateX(-50%) scale(0);pointer-events:none;opacity:0;z-index:1;transition:transform 1s cubic-bezier(.34,1.12,.64,1),opacity 0.35s;';
+      await wait(50);
+      shadow.style.opacity='1';shadow.style.transform='translateX(-50%) scale(1.15)';
+    }
+    await wait(700);
+    // Coco gira y escapa por la derecha
+    setChar(svgCoco('scared'));
+    await runCharAnim('cocoEscape',1250);
+    const el=document.getElementById('splash-char');
+    if(el){el.style.display='none';}
+    if(shadow){shadow.style.opacity='0';shadow.style.transform='translateX(-50%) scale(0)';}
+    // Fondo noche + transición sol→luna
+    document.getElementById('splash-bg').style.background=THEME.night.grad;
+    animSkyOut(false,()=>animSkyIn(true));
+    // Bú entra desde fondo-derecha
+    setChar(svgBu('escape'),{
+      right:'-55%',left:'auto',bottom:'30px',
+      transform:'scale(0.22)',opacity:'0',animation:'none'
+    });
+    await wait(200);
+    if(el){el.style.animation='none';void el.offsetWidth;el.style.animation='buhoEntrada 1.6s cubic-bezier(.22,1,.36,1) forwards';}
+    await wait(1600);
+    // Confundido, no ve a Coco
+    setChar(svgBu('confused'));
+    await runCharAnim('buhoSaludo',1300);
+    // Choca
+    setChar(svgBu('confused'));
+    await runCharAnim('buhoChoque',1300);
+    // Saluda
+    setChar(svgBu('saludo'));
+    await runCharAnim('buhoSaludo',900);
+    spawnParticles();
+    showText(true);
+    await wait(400);
+    idleChar(svgBu('normal'));
+    sceneRunning=false;
+  }
+
+  // ── TRANSICIÓN NOCHE → DÍA: Coco persigue al Bú ──────────────────────────
+  async function sceneToDay(){
+    sceneRunning=true;
+    hideText();
+    // Bú escapa volando
+    setChar(svgBu('escape'));
+    await runCharAnim('buhoEscape',1100);
+    const el=document.getElementById('splash-char');
+    if(el){el.style.display='none';}
+    // Fondo día + transición luna→sol
+    document.getElementById('splash-bg').style.background=THEME.day.grad;
+    animSkyOut(true,()=>animSkyIn(false));
+    // Coco entra desde izquierda buscando al búho
+    setChar(svgCoco('scared'),{
+      left:'-55%',right:'auto',bottom:'30px',
+      transform:'scale(0.22)',opacity:'0',animation:'none'
+    });
+    await wait(150);
+    if(el){el.style.animation='none';void el.offsetWidth;el.style.animation='cocoEntrada 1.4s cubic-bezier(.22,1,.36,1) forwards';}
+    await wait(1400);
+    // Gesto — mira al búho alejarse
+    setChar(svgCoco('gesto'));
+    await runCharAnim('cocoGesto',950);
+    // Voltea y saluda al usuario
+    setChar(svgCoco('saludo'));
+    await runCharAnim('cocoSaludo',850);
+    spawnParticles();
+    showText(false);
+    await wait(400);
+    idleChar(svgCoco('normal'));
+    sceneRunning=false;
+  }
+
+  // ── CONTROLES PÚBLICOS ────────────────────────────────────────────────────
+  window.spToggleMode=async function(){
+    if(sceneRunning)return;
+    const wasNight=nightMode;nightMode=!nightMode;
+    if(wasNight)await sceneToDay();
+    else await sceneToNight();
+  };
+
+  window.splashEnter=function(){
+    const s=document.getElementById('splash');if(!s)return;
+    s.classList.add('hiding');
+    s.addEventListener('transitionend',()=>{s.style.display='none';},{once:true});
+  };
+
+  // Tap en personaje
+  const charEl=document.getElementById('splash-char');
+  if(charEl){
+    charEl.addEventListener('click',()=>{
+      if(sceneRunning)return;
+      charEl.style.animation='none';void charEl.offsetWidth;
+      charEl.style.animation='charBounce 0.55s cubic-bezier(.34,1.56,.64,1)';
+      spawnParticles();
+      charEl.addEventListener('animationend',()=>{
+        charEl.style.animation='idleBob 3.2s ease-in-out infinite';
+      },{once:true});
+    });
+  }
+
+  // ── SWIPE UP ──────────────────────────────────────────────────────────────
+  let spTY=0;
+  const sp=document.getElementById('splash');
+  if(sp){
+    sp.addEventListener('touchstart',e=>{spTY=e.touches[0].clientY;},{passive:true});
+    sp.addEventListener('touchmove',e=>{
+      const dy=spTY-e.touches[0].clientY;
+      if(dy>0){sp.style.transition='none';sp.style.transform=`translateY(${-Math.min(dy*0.3,80)}px)`;}
+    },{passive:true});
+    sp.addEventListener('touchend',e=>{
+      const dy=spTY-e.changedTouches[0].clientY;
+      if(dy>90){splashEnter();}
+      else{sp.style.transition='transform 0.4s cubic-bezier(.34,1.56,.64,1)';sp.style.transform='';setTimeout(()=>sp.style.transition='',420);}
+    },{passive:true});
+  }
+
+  // ── ARRANQUE ──────────────────────────────────────────────────────────────
+  // Mostrar hora y toggle inmediatamente
+  const tog=document.getElementById('sp-toggle');
+  if(tog){tog.textContent=nightMode?'☀️ día':'🌙 noche';tog.style.color=nightMode?THEME.night.text:THEME.day.text;}
+  const tl=document.getElementById('sp-time');
+  if(tl){const now=new Date();tl.textContent=`${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;tl.style.color=nightMode?THEME.night.text:THEME.day.text;}
+
+  paintSky(nightMode);
+  window.addEventListener('resize',()=>paintSky(nightMode));
+
+  if(nightMode)sceneNightEnter();
+  else sceneDayEnter();
+})();
+
+
+
+// ── E3: CARTAS DE EXCLUSIVIDAD ─────────────────────────────────────────────
+const CAT_CARDS=[
+  {char:'🐊',stars:'⭐⭐⭐',title:'¡Lo lograste!',text:'Completaste todas las tarjetas de esta categoría.',quote:'Cada palabra que aprendes abre una puerta nueva.',author:'Coco el Cocodrilo'},
+  {char:'🦉',stars:'🌟🌟🌟',title:'¡Increíble!',text:'Tu memoria es poderosa. ¡Sigue así!',quote:'El conocimiento crece cada vez que lo compartes.',author:'Bú el Búho'},
+  {char:'🎒',stars:'✨✨✨',title:'¡Eres brillante!',text:'Aprendiste nuevas palabras hoy. ¡Qué logro!',quote:'Aprender es el regalo más grande que te puedes dar.',author:''},
+  {char:'🌈',stars:'💫💫💫',title:'¡Campeón!',text:'Tu esfuerzo vale muchísimo. ¡Orgulloso de ti!',quote:'Cada pequeño paso te lleva más lejos de lo que crees.',author:''},
+];
+const RANDOM_CARDS=[
+  {quote:'La imaginación es más importante que el conocimiento.',author:'Albert Einstein',icon:'🔭'},
+  {quote:'El que lee mucho y anda mucho, ve mucho y sabe mucho.',author:'Miguel de Cervantes',icon:'📖'},
+  {quote:'Aprender sin pensar es trabajo perdido; pensar sin aprender es peligroso.',author:'Confucio',icon:'🧘'},
+  {quote:'La educación es el arma más poderosa que puedes usar para cambiar el mundo.',author:'Nelson Mandela',icon:'✊'},
+  {quote:'No hay camino demasiado largo para quien avanza sin prisa.',author:'Séneca',icon:'🚶'},
+  {quote:'El aprendizaje es un tesoro que sigue a su dueño a todas partes.',author:'Proverbio chino',icon:'🏮'},
+  {quote:'Cuanto más aprendo, más me doy cuenta de cuánto me queda por aprender.',author:'Aristóteles',icon:'🏛️'},
+  {quote:'La práctica es el precio de la maestría.',author:'Thomas Edison',icon:'💡'},
+  {quote:'Cada libro es un nuevo viaje que vale la pena emprender.',author:'Octavio Paz',icon:'🌺'},
+  {quote:'Leer es soñar con los ojos abiertos.',author:'Jorge Luis Borges',icon:'🌙'},
+];
+
+let exclCardIdx=0; // rotación de cartas de categoría
+
+function showExclusiveCard(isRandom){
+  const overlay=document.getElementById('exclusive-overlay');
+  if(!overlay)return;
+  overlay.innerHTML='';
+  overlay.classList.add('active');
+
+  const card=document.createElement('div');
+  card.className='excl-card '+(isRandom?'random-card':'cat-card');
+  overlay.appendChild(card);
+
+  if(isRandom){
+    // Seleccionar carta aleatoria dorada
+    const data=RANDOM_CARDS[~~(Math.random()*RANDOM_CARDS.length)];
+    card.innerHTML=`
+      <span class="excl-char">${data.icon}</span>
+      <span class="excl-stars">🥇 MODO ALEATORIO 🥇</span>
+      <div class="excl-title" style="color:#FFD700;">Carta Exclusiva</div>
+      <div class="excl-quote" style="font-size:1rem;opacity:0.9;color:#FFF8E1;">"${data.quote}"</div>
+      <div class="excl-author" style="color:#FFD700;">— ${data.author}</div>
+      <div style="display:flex;gap:10px;justify-content:center;">
+        <button class="excl-btn" onclick="closeExclusive();closeCards()">🏠 Inicio</button>
+        <button class="excl-btn" onclick="closeExclusive();restartDeck()" style="background:#FF8C00;">Repetir 🔄</button>
+      </div>`;
+    // Partículas doradas
+    setTimeout(()=>{
+      for(let i=0;i<20;i++){
+        const p=document.createElement('div');p.className='gold-particle';
+        const ang=Math.random()*Math.PI*2,dist=80+Math.random()*120;
+        p.style.cssText=`left:50%;top:50%;--gx:${Math.cos(ang)*dist}px;--gy:${Math.sin(ang)*dist}px;animation-delay:${Math.random()*0.4}s;background:${['#FFD700','#FFA500','#FF8C00'][~~(Math.random()*3)]};`;
+        card.appendChild(p);
+      }
+    },200);
+  } else {
+    const data=CAT_CARDS[exclCardIdx%CAT_CARDS.length];
+    exclCardIdx++;
+    card.innerHTML=`
+      <span class="excl-char">${data.char}</span>
+      <span class="excl-stars">${data.stars}</span>
+      <div class="excl-title" style="color:#FF7B54;">${data.title}</div>
+      <div class="excl-text" style="color:#3D2B00;">${data.text}</div>
+      <div class="excl-quote">"${data.quote}"</div>
+      ${data.author?`<div class="excl-author" style="color:#FF9B54;">— ${data.author}</div>`:''}
+      <div style="display:flex;gap:10px;justify-content:center;">
+        <button class="excl-btn" onclick="closeExclusive();closeCards()">🏠 Inicio</button>
+        <button class="excl-btn" onclick="closeExclusive();restartDeck()">Repetir 🔄</button>
+      </div>`;
+  }
+  // Lanzar confetti
+  launchConfetti(window.innerWidth/2,window.innerHeight*0.4);
+  setTimeout(()=>card.classList.add('show'),50);
+  setTimeout(()=>speak(isRandom?'¡Felicitaciones! Completaste el modo aleatorio.':'¡Bravo! Lo hiciste muy bien.'),400);
+}
+
+function closeExclusive(){
+  const overlay=document.getElementById('exclusive-overlay');
+  if(!overlay)return;
+  const card=overlay.querySelector('.excl-card');
+  if(card)card.classList.remove('show');
+  setTimeout(()=>{overlay.classList.remove('active');overlay.innerHTML='';},400);
+}
+
+// ── D2: ANIMACIÓN DE DADO ──────────────────────────────────────────────────
+function animateDiceAndStart(){
+  const overlay=document.getElementById('dice-overlay');
+  const grid=document.getElementById('catGrid');
+  if(!overlay||!grid)return startRandom();
+
+  const btns=[...grid.querySelectorAll('.cat-btn')];
+  if(!btns.length)return startRandom();
+
+  overlay.innerHTML='';
+  overlay.classList.add('active');
+
+  const CATS_KEYS=Object.keys(CATS);
+  const totalSteps=22; // pasos de la ruleta
+  let step=0;
+  let lastHighlight=-1;
+  let delay=60; // ms inicial (rápido)
+
+  function highlightStep(){
+    // Quitar highlight anterior
+    if(lastHighlight>=0&&btns[lastHighlight]){
+      btns[lastHighlight].style.transform='';
+      btns[lastHighlight].style.boxShadow='';
+      btns[lastHighlight].style.zIndex='';
+    }
+    // Avanzar con patrón zigzag
+    const idx=step%btns.length;
+    const btn=btns[idx];
+    if(btn){
+      btn.style.transform='scale(1.15)';
+      btn.style.boxShadow=`0 0 0 3px ${CATS[CATS_KEYS[idx%CATS_KEYS.length]]?.color||'#FF7B54'},0 8px 24px rgba(0,0,0,0.2)`;
+      btn.style.zIndex='10';
+      // Sweep visual sobre el botón
+      const rect=btn.getBoundingClientRect();
+      const sweep=document.createElement('div');
+      sweep.className='dice-sweep';
+      sweep.style.cssText=`left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;height:${rect.height}px;`;
+      overlay.appendChild(sweep);
+      sweep.addEventListener('animationend',()=>sweep.remove());
+    }
+    lastHighlight=idx;
+    step++;
+    delay=step<totalSteps*0.5?delay:delay*1.08; // desacelera al final
+    if(step<totalSteps){
+      setTimeout(highlightStep,Math.min(delay,280));
+    } else {
+      // Animación final — flash dorado en el ganador
+      const winner=btns[lastHighlight];
+      if(winner){
+        const flash=document.createElement('div');
+        flash.className='dice-final-flash';
+        const rect=winner.getBoundingClientRect();
+        flash.style.cssText=`left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;height:${rect.height}px;`;
+        overlay.appendChild(flash);
+        // Sacudir el dado
+        const diceEl=document.querySelector('.dice-icon');
+        if(diceEl){diceEl.style.animation='diceRoll 0.15s ease 3';setTimeout(()=>diceEl.style.animation='',500);}
+      }
+      setTimeout(()=>{
+        // Limpiar
+        btns.forEach(b=>{b.style.transform='';b.style.boxShadow='';b.style.zIndex='';});
+        overlay.innerHTML='';
+        overlay.classList.remove('active');
+        // Lanzar modo aleatorio
+        startRandom();
+      },600);
+    }
+  }
+  highlightStep();
+}
+
+
+// ── SISTEMA DE PROGRESO PERSISTENTE ────────────────────────────────────────
+// Estructura guardada en localStorage:
+// {
+//   catProgress:  { [catKey]: número de tarjetas vistas totales },
+//   randomProgress: número de tarjetas vistas en modo aleatorio (acumulado),
+//   unlockedEmotivas:  [ {catKey, cardIdx, word, emoji, date} ],
+//   unlockedExclusivas:[ {quoteIdx, date} ],
+//   seenNewCards: boolean
+// }
+
+const STORAGE_KEY = 'aprende_progress_v1';
+const EMOTIVE_THRESHOLD  = 15; // tarjetas para desbloquear carta emotiva
+const EXCLUSIVE_THRESHOLD = 25; // tarjetas para desbloquear carta exclusiva
+
+function loadProgress(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return {
+    catProgress:{},
+    randomProgress:0,
+    unlockedEmotivas:[],
+    unlockedExclusivas:[],
+    seenNewCards:true
+  };
+}
+
+function saveProgress(p){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(p)); }catch(e){}
+}
+
+// Estado de progreso en memoria
+let PROG = loadProgress();
+
+// Actualizar badge de "Mis Tarjetas"
+function updateCollectionBadge(){
+  const badge = document.getElementById('newCardsBadge');
+  if(!badge) return;
+  if(!PROG.seenNewCards){
+    const total = PROG.unlockedEmotivas.length + PROG.unlockedExclusivas.length;
+    badge.textContent = total;
+    badge.style.display = total > 0 ? 'flex' : 'none';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+// Llamar cada vez que se ve una tarjeta (al pasar a siguiente)
+function trackCardSeen(isRandom){
+  if(isRandom){
+    PROG.randomProgress++;
+    // Comprobar si se alcanza umbral de carta exclusiva
+    if(PROG.randomProgress > 0 && PROG.randomProgress % EXCLUSIVE_THRESHOLD === 0){
+      const qIdx = Math.floor(Math.random() * 10);
+      // Solo agregar si no la tiene ya
+      const alreadyHas = PROG.unlockedExclusivas.some(e=>e.quoteIdx===qIdx && 
+        PROG.unlockedExclusivas.filter(x=>x.quoteIdx===qIdx).length >= 1);
+      if(PROG.unlockedExclusivas.length < 10){
+        // Elegir una no desbloqueada aún
+        const usedIdx = new Set(PROG.unlockedExclusivas.map(e=>e.quoteIdx));
+        let nextIdx = qIdx;
+        for(let i=0;i<10;i++){ if(!usedIdx.has(i)){nextIdx=i;break;} }
+        PROG.unlockedExclusivas.push({quoteIdx:nextIdx, date:Date.now()});
+        PROG.seenNewCards = false;
+        saveProgress(PROG);
+        updateCollectionBadge();
+      }
+    }
+  } else if(selectedCat){
+    if(!PROG.catProgress[selectedCat]) PROG.catProgress[selectedCat]=0;
+    PROG.catProgress[selectedCat]++;
+    // Comprobar umbral emotiva
+    const prog = PROG.catProgress[selectedCat];
+    if(prog > 0 && prog % EMOTIVE_THRESHOLD === 0){
+      // Desbloquear carta emotiva con la palabra actual
+      const card = cards[currentIdx];
+      if(card){
+        const emoji = FALLBACKS[card.es] || '⭐';
+        PROG.unlockedEmotivas.push({
+          catKey:selectedCat, word:card.es, en:card.en,
+          emoji, date:Date.now(),
+          design: prog/EMOTIVE_THRESHOLD % 4  // 0-3 diseños rotativos
+        });
+        PROG.seenNewCards = false;
+        saveProgress(PROG);
+        updateCollectionBadge();
+      }
+    }
+  }
+  saveProgress(PROG);
+}
+
+// ── HOOK EN renderCard para trackear ───────────────────────────────────────
+const _origGoNext = goNext;
+// Reemplazamos goNext para que cuente al avanzar
+function goNext(){
+  const isRandom = !selectedCat;
+  trackCardSeen(isRandom);
+  if(currentIdx>=cards.length-1){showDone();return;}
+  const fc=document.getElementById('fcCard');fc.classList.add('swipe-left');
+  fc.addEventListener('animationend',()=>{fc.classList.remove('swipe-left');currentIdx++;renderCard(true,'next');},{once:true});
+}
+
+// ── BARRA DE PROGRESO EN EL COUNTER ────────────────────────────────────────
+// Mostrar cuántas tarjetas faltan para la próxima recompensa en el contador
+function updateRewardCounter(){
+  const counter = document.getElementById('fcCounter');
+  if(!counter) return;
+  const isRandom = !selectedCat;
+  let prog, threshold;
+  if(isRandom){
+    prog = PROG.randomProgress % EXCLUSIVE_THRESHOLD;
+    threshold = EXCLUSIVE_THRESHOLD;
+  } else {
+    prog = (PROG.catProgress[selectedCat]||0) % EMOTIVE_THRESHOLD;
+    threshold = EMOTIVE_THRESHOLD;
+  }
+  const remaining = threshold - prog;
+  const icon = isRandom ? '🥇' : '⭐';
+  counter.innerHTML = `${currentIdx+1}/${cards.length} <span style="font-size:0.65rem;opacity:0.7">${icon}${remaining}</span>`;
+}
+
+// updateRewardCounter se llama desde dentro de renderCard via setTimeout
+
+// ── BOTÓN "VOLVER A INICIO" ─────────────────────────────────────────────────
+function goBackToSplash(){
+  const splash = document.getElementById('splash');
+  if(splash){
+    splash.style.display = '';
+    // Pequeño reset de la transición
+    splash.style.opacity = '0';
+    splash.classList.remove('hiding');
+    requestAnimationFrame(()=>{
+      splash.style.opacity = '';
+      splash.style.transform = '';
+    });
+  }
+}
+
+// ── PANTALLA COLECCIÓN ──────────────────────────────────────────────────────
+let currentCollTab = 'emotivas';
+
+function openCollection(){
+  PROG.seenNewCards = true;
+  saveProgress(PROG);
+  updateCollectionBadge();
+  renderCollection('emotivas');
+  document.getElementById('collection-screen').classList.add('visible');
+}
+
+function closeCollection(){
+  document.getElementById('collection-screen').classList.remove('visible');
+}
+
+function switchCollTab(tab){
+  currentCollTab = tab;
+  document.getElementById('tab-emotivas').classList.toggle('active', tab==='emotivas');
+  document.getElementById('tab-exclusivas').classList.toggle('active', tab==='exclusivas');
+  renderCollection(tab);
+}
+
+function renderCollection(tab){
+  const body = document.getElementById('collBody');
+  const countEl = document.getElementById('collCount');
+  const total = PROG.unlockedEmotivas.length + PROG.unlockedExclusivas.length;
+  if(countEl) countEl.textContent = `${total} desbloqueada${total!==1?'s':''}`;
+
+  if(tab==='emotivas'){
+    renderEmotivasTab(body);
+  } else {
+    renderExclusivasTab(body);
+  }
+}
+
+function renderEmotivasTab(body){
+  let html = '';
+  // Progreso por categoría
+  const catKeys = Object.keys(CATS);
+  html += '<div class="unlock-progress-wrap">';
+  html += '<div class="unlock-label"><span>Progreso general</span><span>' +
+    PROG.unlockedEmotivas.length + ' carta' + (PROG.unlockedEmotivas.length!==1?'s':'') + '</span></div>';
+  const totalSeen = Object.values(PROG.catProgress).reduce((a,b)=>a+b,0);
+  const totalNeeded = catKeys.length * EMOTIVE_THRESHOLD;
+  html += `<div class="coll-progress-bar"><div class="coll-progress-fill" style="width:${Math.min(100,Math.round(totalSeen/totalNeeded*100))}%;"></div></div>`;
+  html += `<div style="font-size:0.68rem;color:#bbb;text-align:right;">Próxima en ${EMOTIVE_THRESHOLD - (totalSeen%EMOTIVE_THRESHOLD)} tarjetas más</div>`;
+  html += '</div>';
+
+  if(PROG.unlockedEmotivas.length === 0){
+    html += '<div style="text-align:center;padding:2rem 1rem;color:#ccc;">';
+    html += '<div style="font-size:3rem;margin-bottom:0.5rem;">⭐</div>';
+    html += '<div style="font-size:0.9rem;font-weight:700;">Completa 15 tarjetas para desbloquear tu primera carta emotiva</div>';
+    html += '</div>';
+  } else {
+    html += '<div class="coll-section-title">Tarjetas desbloqueadas</div>';
+    html += '<div class="coll-grid">';
+    PROG.unlockedEmotivas.slice().reverse().forEach(card=>{
+      const catData = CATS[card.catKey];
+      const color = catData ? catData.color : '#FF7B54';
+      html += `<div class="coll-card" style="border:2px solid ${color}22;background:${color}10;">
+        <span class="coll-card-icon">${card.emoji}</span>
+        <div class="coll-card-word">${card.word}</div>
+        <div class="coll-card-en">${card.en}</div>
+        <div style="font-size:0.55rem;color:${color};font-weight:800;margin-top:2px;">${catData?catData.label:''}</div>
+      </div>`;
+    });
+    // Slots bloqueados (hasta 20 en total)
+    const maxSlots = 20;
+    const locked = maxSlots - PROG.unlockedEmotivas.length;
+    for(let i=0;i<Math.min(locked,6);i++){
+      html += `<div class="coll-card locked">
+        <span class="coll-card-icon">🔒</span>
+        <div class="coll-lock">Juega más</div>
+      </div>`;
+    }
+    html += '</div>';
+  }
+  body.innerHTML = html;
+}
+
+function renderExclusivasTab(body){
+  const RANDOM_CARDS_DATA=[
+    {quote:'La imaginación es más importante que el conocimiento.',author:'Albert Einstein',icon:'🔭'},
+    {quote:'El que lee mucho y anda mucho, ve mucho y sabe mucho.',author:'Miguel de Cervantes',icon:'📖'},
+    {quote:'Aprender sin pensar es trabajo perdido.',author:'Confucio',icon:'🧘'},
+    {quote:'La educación es el arma más poderosa para cambiar el mundo.',author:'Nelson Mandela',icon:'✊'},
+    {quote:'No hay camino demasiado largo para quien avanza sin prisa.',author:'Séneca',icon:'🚶'},
+    {quote:'El aprendizaje es un tesoro que sigue a su dueño a todas partes.',author:'Proverbio chino',icon:'🏮'},
+    {quote:'Cuanto más aprendo, más me doy cuenta de cuánto me queda por aprender.',author:'Aristóteles',icon:'🏛️'},
+    {quote:'La práctica es el precio de la maestría.',author:'Thomas Edison',icon:'💡'},
+    {quote:'Cada libro es un nuevo viaje que vale la pena emprender.',author:'Octavio Paz',icon:'🌺'},
+    {quote:'Leer es soñar con los ojos abiertos.',author:'Jorge Luis Borges',icon:'🌙'},
+  ];
+
+  let html = '';
+  html += '<div class="unlock-progress-wrap">';
+  const prog = PROG.randomProgress % EXCLUSIVE_THRESHOLD;
+  const remaining = EXCLUSIVE_THRESHOLD - prog;
+  html += '<div class="unlock-label"><span>Modo aleatorio</span><span>' +
+    PROG.unlockedExclusivas.length + '/10 cartas</span></div>';
+  html += `<div class="coll-progress-bar"><div class="coll-progress-fill" style="width:${Math.round(prog/EXCLUSIVE_THRESHOLD*100)}%;background:#FFD700;"></div></div>`;
+  html += `<div style="font-size:0.68rem;color:#bbb;text-align:right;">Próxima en ${remaining} tarjetas del modo aleatorio</div>`;
+  html += '</div>';
+
+  html += '<div class="coll-section-title">Cartas exclusivas 🥇</div>';
+  html += '<div class="coll-grid">';
+
+  const unlockedIdx = new Set(PROG.unlockedExclusivas.map(e=>e.quoteIdx));
+  RANDOM_CARDS_DATA.forEach((card, idx)=>{
+    if(unlockedIdx.has(idx)){
+      html += `<div class="coll-card exclusive">
+        <span class="coll-card-icon">${card.icon}</span>
+        <div class="coll-card-word" style="font-size:0.58rem;line-height:1.3;">"${card.quote.substring(0,40)}..."</div>
+        <div class="coll-card-en" style="margin-top:2px;">— ${card.author}</div>
+      </div>`;
+    } else {
+      html += `<div class="coll-card locked" style="border:1px solid #FFD70022;background:#1a120008;">
+        <span class="coll-card-icon">🔒</span>
+        <div class="coll-lock">Juega aleatorio</div>
+      </div>`;
+    }
+  });
+  html += '</div>';
+  body.innerHTML = html;
+}
+
+// Inicializar badge al cargar
+updateCollectionBadge();
+
+buildHome();
+</script>
+
+<script>
+// ── REGISTRO SERVICE WORKER ───────────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js', { scope: '/' })
+      .then(reg => {
+        console.log('[PWA] Service Worker registrado:', reg.scope);
+        // Verificar actualizaciones cada vez que la app se enfoca
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') reg.update();
+        });
+      })
+      .catch(err => console.warn('[PWA] SW no registrado:', err));
+  });
+}
+
+// ── INSTALACIÓN PWA (botón "Añadir a pantalla de inicio") ────────────────────
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Mostrar botón de instalación si existe
+  const btn = document.getElementById('pwa-install-btn');
+  if (btn) btn.style.display = 'flex';
+});
+
+window.installPWA = async function() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  console.log('[PWA] Usuario eligió:', outcome);
+  deferredPrompt = null;
+  const btn = document.getElementById('pwa-install-btn');
+  if (btn) btn.style.display = 'none';
+};
+
+window.addEventListener('appinstalled', () => {
+  console.log('[PWA] App instalada correctamente');
+  deferredPrompt = null;
+});
+
+// ── DETECCIÓN: ¿navegando desde app instalada? ───────────────────────────────
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+  || window.navigator.standalone === true;
+if (isStandalone) {
+  document.documentElement.classList.add('pwa-standalone');
+  console.log('[PWA] Corriendo como app instalada');
+}
+
+// ── DEEP LINKS: ?cat= y ?mode= desde shortcuts del manifest ─────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const cat = params.get('cat');
+  const mode = params.get('mode');
+  // Se manejan después de que buildHome() termine
+  if (cat || mode) {
+    // Dar tiempo a que la splash se inicie y la app esté lista
+    const checkReady = setInterval(() => {
+      if (typeof CATS !== 'undefined' && document.getElementById('catGrid')?.children.length > 0) {
+        clearInterval(checkReady);
+        if (mode === 'random') {
+          // Esperar a que pase la splash
+          setTimeout(() => {
+            const splash = document.getElementById('splash');
+            if (splash) splash.style.display = 'none';
+            startRandom();
+          }, 500);
+        } else if (cat && CATS[cat]) {
+          setTimeout(() => {
+            const splash = document.getElementById('splash');
+            if (splash) splash.style.display = 'none';
+            const catData = CATS[cat];
+            startRandom(); // fallback, se puede mejorar a lanzar categoría específica
+          }, 500);
+        }
+      }
+    }, 200);
+  }
+});
+</script>
+</body>
+</html>
